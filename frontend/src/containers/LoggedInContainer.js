@@ -2,26 +2,20 @@ import React, { useState, Fragment, useContext, useEffect } from "react";
 import IconText from "../components/IconText";
 import logo from "../images/logo4.png";
 import { Link } from "react-router-dom";
-import { useCookies } from "react-cookie";
 import { Icon } from "@iconify/react";
 import { Menu, Transition } from "@headlessui/react";
 import MusicFooter from "../components/MusicFooter";
 import { toast } from "react-toastify";
 import { useAudio } from "../contexts/AudioContext";
+import { useAuth } from "../contexts/AuthContext";
 
 const LoggedInContainer = ({ children, curActiveScreen }) => {
   const { currentSong, stopMusicLogout } = useAudio() || {};
-  const [cookie, setCookie, removeCookie] = useCookies(["token"]);
-  const [userData, setUserData] = useState(
-    JSON.parse(localStorage.getItem("currentUser")) || null
-  );
+  const { isAuthenticated, user, logoutCookie ,cookies} = useAuth();
 
-  const [isLoggedIn, setIsLoggedIn] = useState(Boolean(cookie?.token));
   const handleLogout = () => {
-    removeCookie("token");
-    localStorage.removeItem("currentUser");
-    setIsLoggedIn(false);
-    stopMusicLogout()
+    logoutCookie();
+    stopMusicLogout();
     toast.success("Successfully Logout.");
   };
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
@@ -29,15 +23,6 @@ const LoggedInContainer = ({ children, curActiveScreen }) => {
   const toggleSidebar = () => {
     setIsSidebarOpen(!isSidebarOpen);
   };
-
-  useEffect(() => {
-    if (isLoggedIn) {
-      const user = JSON.parse(localStorage.getItem("currentUser"));
-      if (user) {
-        setUserData(user);
-      }
-    }
-  }, [isLoggedIn]);
 
   return (
     <div className="bg-black w-full h-full">
@@ -73,7 +58,7 @@ const LoggedInContainer = ({ children, curActiveScreen }) => {
               <div className="flex items-center ms-3">
                 <Menu as="div" className="relative ml-3">
                   <div>
-                    {isLoggedIn ? (
+                    {isAuthenticated ? (
                       <Menu.Button className="flex max-w-xs items-center sm:rounded-lg sm:bg-darkGray-light text-sm  ">
                         <span className="sr-only">Open user menu</span>
                         <div className="bg-primary text-white p-2 cursor-pointer hidden sm:flex items-center rounded-lg">
@@ -85,7 +70,7 @@ const LoggedInContainer = ({ children, curActiveScreen }) => {
                             />
                           </div>
                           <div className="mr-2 text-sm capitalize ">
-                            {isLoggedIn && userData?.firstName}
+                            {isAuthenticated && user?.firstName}
                           </div>
                           <div>
                             <Icon
@@ -179,7 +164,7 @@ const LoggedInContainer = ({ children, curActiveScreen }) => {
                 active={curActiveScreen === "search"}
                 targetLink={"/search"}
               />
-              {isLoggedIn && userData?.isArtist && (
+              {isAuthenticated && user?.isArtist && (
                 <>
                   <IconText
                     iconName={"basil:edit-solid"}
@@ -195,7 +180,7 @@ const LoggedInContainer = ({ children, curActiveScreen }) => {
                   />
                 </>
               )}
-              {isLoggedIn && (
+              {isAuthenticated && (
                 <IconText
                   iconName={"mdi:cards-heart"}
                   displayText={"Liked Songs"}

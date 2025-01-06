@@ -1,29 +1,30 @@
-import { useContext, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { Icon } from "@iconify/react";
 import { useAudio } from "../contexts/AudioContext";
 import spectrum from "../images/spectrum.gif";
 import spectrumPng from "../images/spectrum.png";
-import { useCookies } from "react-cookie";
-const SingleSongBox = ({ item, songList, ListKey, edit }) => {
-  const { play, currentSong, setPlaylist, isPlaying } = useAudio() || {};
-  const [cookie, setCookie] = useCookies(["token"]);
+import { useAuth } from "../contexts/AuthContext";
 
-  const [isLoggedIn, setIsLoggedIn] = useState(Boolean(cookie.token));
+const SingleSongBox = ({ item, songList, edit }) => {
+  const { play, currentSong, setPlaylist, isPlaying } = useAudio() || {};
+  const { isAuthenticated } = useAuth();
+  const navigate = useNavigate();
   const songId = item?._id;
 
-  const handlePlay = () => {
-    if (!edit && isLoggedIn) {
-      // Set the current playlist dynamically when the user plays a song
-      setPlaylist(songList);
-      play(item);
+  const handleClick = () => {
+    if (isAuthenticated) {
+      if (!edit) {
+        setPlaylist(songList);
+        play(item);
+      }
+    } else {
+      navigate("/login");
     }
   };
   return (
     <div
       className="flex p-1 sm:p-2 rounded-sm w-full justify-between space-x-4  "
-      onClick={handlePlay}
-      key={ListKey}
+      onClick={handleClick}
     >
       <div className="bg-black bg-opacity-40 w-full relative  rounded-lg hover:bg-lightGray hover:bg-opacity-20">
         <div className="overflow-hidden">

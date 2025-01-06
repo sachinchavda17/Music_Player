@@ -1,9 +1,10 @@
 // SongNotAvailable.js
 import React from "react";
 import errorImg from "../images/error.png";
-import { Navigate, useNavigate } from "react-router-dom";
+import {  useNavigate } from "react-router-dom";
 
 const SongNotAvailable = () => {
+  const navigate = useNavigate()
   return (
     <div className="w-full flex flex-col items-center justify-center text-center h-96 bg-black-light p-4">
       <img
@@ -21,7 +22,7 @@ const SongNotAvailable = () => {
       <button
         className="px-4 py-2 bg-primary text-white rounded hover:bg-primary-light transition duration-200"
         onClick={() => {
-          Navigate("/");
+          navigate("/");
         }}
       >
         Go Back Home

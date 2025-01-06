@@ -1,12 +1,13 @@
 import React, { useContext, useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { makeGETRequest, makePOSTRequest } from "../utils/serverHelpers";
+import { getDataApi, postDataApi } from "../utils/serverHelpers";
 import CloudinaryUpload from "./CloudinaryUpload";
 import Loading from "./Loading";
 import { Icon } from "@iconify/react";
 import LoggedInContainer from "../containers/LoggedInContainer";
 import { toast } from "react-toastify";
 import { useAudio } from "../contexts/AudioContext";
+import { useAuth } from "../contexts/AuthContext";
 
 const EditSongPage = () => {
   const [name, setName] = useState("");
@@ -20,14 +21,16 @@ const EditSongPage = () => {
   const [buttonLoadingUpdate, setButtonLoadingUpdate] = useState(null);
   const [buttonLoadingDelete, setButtonLoadingDelete] = useState(null);
 
-  const {currentSong} = useAudio()
+  const { currentSong } = useAudio();
+  const { cookies } = useAuth();
+  const token = cookies?.authToken;
   const navigate = useNavigate();
 
   useEffect(() => {
     const getData = async () => {
       try {
         setLoading(true);
-        const response = await makeGETRequest("/song/edit/" + songId);
+        const response = await getDataApi("/song/edit/" + songId, token);
         setSong(response.data);
       } catch (err) {
         toast.error("Error fetching song data");
@@ -57,9 +60,10 @@ const EditSongPage = () => {
         data.track = song.track || "";
       }
 
-      const response = await makePOSTRequest(
+      const response = await postDataApi(
         "/song/edit/" + songId + "/update",
-        data
+        data,
+        token
       );
 
       setButtonLoadingUpdate(false);
@@ -82,7 +86,7 @@ const EditSongPage = () => {
   const deleteProject = async () => {
     try {
       setButtonLoadingDelete(true);
-      await makeGETRequest("/song/edit/" + songId + "/delete");
+      await getDataApi("/song/edit/" + songId + "/delete", token);
       toast.success("Song deleted successfully");
       setTimeout(() => {
         navigate("/");

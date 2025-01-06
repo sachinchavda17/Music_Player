@@ -2,8 +2,8 @@ import React, { useEffect, useState } from "react";
 import { Icon } from "@iconify/react";
 import { Link } from "react-router-dom";
 import { useAudio } from "../contexts/AudioContext.js";
-import { secondsToHms } from "../containers/functionContainer.js";
-import { makeGETRequest } from "../utils/serverHelpers.js";
+import { useAuth } from "../contexts/AuthContext.js";
+import { getDataApi } from "../utils/serverHelpers.js";
 import AudioPlayerControls from "./AudioPlayerControls.js";
 
 const MusicFooter = () => {
@@ -26,6 +26,8 @@ const MusicFooter = () => {
   const [isPopoverVisible, setIsPopoverVisible] = useState(false);
   const [isLikedPopover, setIsLikedPopover] = useState(false);
   const [liked, setLiked] = useState(false);
+  const { cookies } = useAuth();
+  const token = cookies?.authToken;
   const userId = currentUser?._id;
   const songId = currentSong?._id;
 
@@ -35,7 +37,10 @@ const MusicFooter = () => {
 
   const fetchLikedStatus = async () => {
     try {
-      const response = await makeGETRequest(`/song/liked/${userId}/${songId}`);
+      const response = await getDataApi(
+        `/song/liked/${userId}/${songId}`,
+        token
+      );
       const likedStatus =
         response?.liked !== undefined ? response.liked : false;
       setLiked(likedStatus);
@@ -45,13 +50,20 @@ const MusicFooter = () => {
     }
   };
 
+  const likeToggleFetch = async () => {
+    try {
+      const response = await getDataApi(`/song/like/${userId}/${songId}`,token);
+      setLiked(response.msg);
+    } catch (err) {
+      console.error("Error toggling like:", err);
+      setLiked("Error toggling like");
+    }
+  };
+
   useEffect(() => {
     fetchLikedStatus();
   }, [userId, songId]);
 
-  const likeToggleFetch = async () => {
-    setLiked(!liked); // Simulated like toggle (replace with API call if needed)
-  };
 
   return (
     <div
@@ -61,24 +73,26 @@ const MusicFooter = () => {
       <div className="flex items-center justify-between">
         {/* Left Section */}
 
-          <Link to={"/playedsong"} className="flex gap-2 items-center w-1/2 sm:w-1/4">
-          
-              <img
-                src={currentSong?.thumbnail || "/placeholder.jpg"}
-                alt="Song Cover"
-                className="w-10 h-10 rounded sm:w-16 sm:h-16 mr-4"
-              />
-              <div>
-                <p className="text-sm sm:text-base">
-                  {currentSong?.name || "No Track"}
-                </p>
-                <p className="text-sm hidden sm:block">
-                  {currentSong?.artist?.firstName +
-                    " " +
-                    currentSong?.artist?.lastName || "Unknown Artist"}
-                </p>
-              </div>
-          </Link>
+        <Link
+          to={"/playedsong"}
+          className="flex gap-2 items-center w-1/2 sm:w-1/4"
+        >
+          <img
+            src={currentSong?.thumbnail || "/placeholder.jpg"}
+            alt="Song Cover"
+            className="w-10 h-10 rounded sm:w-16 sm:h-16 mr-4"
+          />
+          <div>
+            <p className="text-sm sm:text-base">
+              {currentSong?.name || "No Track"}
+            </p>
+            <p className="text-sm hidden sm:block">
+              {currentSong?.artist?.firstName +
+                " " +
+                currentSong?.artist?.lastName || "Unknown Artist"}
+            </p>
+          </div>
+        </Link>
 
         {/* Center Section */}
         <AudioPlayerControls />

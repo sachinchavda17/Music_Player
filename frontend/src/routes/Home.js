@@ -1,21 +1,27 @@
-import { Link } from "react-router-dom";
-import { makeGETRequest } from "../utils/serverHelpers";
+import { getDataApi } from "../utils/serverHelpers";
 import { useState, useEffect } from "react";
 import SingleSongBox from "../components/SingleSongBox";
 import LoggedInContainer from "../containers/LoggedInContainer";
 import { toast } from "react-toastify";
 import Loading from "../components/Loading";
 import SongNotAvailable from "../components/SongNotAvailable";
+import { useAuth } from "../contexts/AuthContext";
+import { useAudio } from "../contexts/AudioContext";
 
 const Home = () => {
   const [songData, setSongData] = useState([]);
   const [loading, setLoading] = useState(true);
-
+  const { isAuthenticated ,token} = useAuth();
+  const { currentSong } = useAudio() || {}; // Use only required context values
   useEffect(() => {
     const getData = async () => {
       try {
-        const response = await makeGETRequest("/song/get/logout/allsong");
-        setSongData(response.data);
+        const response = await getDataApi("/song/get/allsong");
+        if (response?.data) {
+          setSongData(response.data);
+        } else {
+          toast.error("No songs available.");
+        }
       } catch (error) {
         toast.error("Error fetching data");
       } finally {
@@ -24,7 +30,7 @@ const Home = () => {
     };
 
     getData();
-  }, []);
+  }, [token]);
 
   return (
     <LoggedInContainer curActiveScreen="home">
@@ -33,11 +39,13 @@ const Home = () => {
       ) : songData.length === 0 ? (
         <SongNotAvailable />
       ) : (
-        <div className="py-5 grid gap-2 grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-6 overflow-auto max-lg:grid-cols-3 max-md:grid-cols-2">
+        <div
+          className={`${
+            currentSong ? "mb-20" : ""
+          } py-5 grid gap-2 grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-6 overflow-auto max-lg:grid-cols-3 max-md:grid-cols-2`}
+        >
           {songData.map((item, ind) => (
-            <Link to={"/login"} key={ind}>
-              <SingleSongBox item={item} ListKey={ind} />
-            </Link>
+            <SingleSongBox item={item} songList={songData} key={ind} />
           ))}
         </div>
       )}

@@ -3,10 +3,24 @@ const router = express.Router();
 const passport = require("passport");
 const Song = require("../models/Song");
 const User = require("../models/User");
+const authMiddleware = require("../utils/authMiddleware");
+
+
+router.get(
+  "/get/allsong",
+  async (req, res) => {
+    try {
+      const songs = await Song.find({}).populate("artist");
+      return res.status(200).json({ data: songs });
+    } catch (error) {
+      return res.status(301).json({ err: error });
+    }
+  }
+);
 
 router.post(
   "/create",
-  passport.authenticate("jwt", { session: false }),
+ authMiddleware,
   async (req, res) => {
     try {
       // req.user gets the user because of passport.authenticate
@@ -31,27 +45,20 @@ router.post(
 );
 
 // Get route to get all songs I have published.
-router.get(
-  "/get/mysongs",
-  passport.authenticate("jwt", { session: false }),
-  async (req, res) => {
-    try {
-      // We need to get all songs where artist id == currentUser._id
-      const songs = await Song.find({ artist: req.user._id }).populate(
-        "artist"
-      );
-      return res.status(200).json({ data: songs });
-    } catch (error) {
-      return res.status(301).json({ err: error });
-    }
+router.get("/get/mysongs",authMiddleware, async (req, res) => {
+  try {
+    // We need to get all songs where artist id == currentUser._id
+    const songs = await Song.find({ artist: req.body.userId }).populate("artist");
+    return res.status(200).json({ data: songs });
+  } catch (error) {
+    return res.status(301).json({ err: error });
   }
-);
+});
 
 // Get route to get a single song by name
 
 router.get(
-  "/get/songname/:songName",
-  passport.authenticate("jwt", { session: false }),
+  "/get/search/:songName",
   async (req, res) => {
     try {
       const { songName } = req.params;
@@ -72,53 +79,57 @@ router.get(
 );
 
 router.get(
-  "/get/allsong/",
-  passport.authenticate("jwt", { session: false }),
+  "/likesongs",
+ authMiddleware,
   async (req, res) => {
     try {
-      const songs = await Song.find({}).populate("artist")
-      return res.status(200).json({ data: songs });
+      const { userId } = req.body;
+      // Find the user by userId
+      const user = await User.findById(userId);
+
+      if (!user) {
+        return res.status(404).json({ error: "User not found" });
+      }
+
+      const likedSongs = user.likedSongs;
+
+      if (!likedSongs || likedSongs.length === 0) {
+        return res
+          .status(200)
+          .json({ err: "You haven't liked any song till now" });
+      }
+
+      // Fetch all liked songs and populate artist details in one query
+      const likedSongData = await Song.find({
+        _id: { $in: likedSongs },
+      }).populate("artist");
+      
+      return res.status(200).json({ data: likedSongData });
+    } catch (err) {
+      console.error(err);
+      return res.status(500).json({ err: "Internal Server Error" });
+    }
+  }
+);
+
+
+router.get(
+  "/edit/:songId",
+ authMiddleware,
+  async (req, res) => {
+    try {
+      const { songId } = req.params;
+      const song = await Song.findOne({ _id: songId }).populate();
+      return res.status(200).json({ data: song });
     } catch (error) {
       return res.status(301).json({ err: error });
     }
   }
 );
 
-router.get("/get/logout/allsong/", async (req, res) => {
-  try {
-    const songs = await Song.find({}).populate("artist");
-    return res.status(200).json({ data: songs });
-  } catch (error) {
-    return res.status(301).json({ err: error });
-  }
-});
-
-router.get("/get/logout/songname/:songName", async (req, res) => {
-  try {
-    const { songName } = req.params;
-    const regexPattern = new RegExp(songName, "i");
-    const songs = await Song.find({
-      name: { $regex: regexPattern },
-    }).populate("artist");
-    return res.status(200).json({ data: songs });
-  } catch (error) {
-    return res.status(301).json({ err: error });
-  }
-});
-
-router.get("/edit/:songId", passport.authenticate("jwt", { session: false }), async (req, res) => {
-  try {
-    const { songId } = req.params;
-    const song = await Song.findOne({ _id: songId }).populate();
-    return res.status(200).json({ data: song });
-  } catch (error) {
-    return res.status(301).json({ err: error });
-  }
-});
-
 router.post(
   "/edit/:songId/update",
-  passport.authenticate("jwt", { session: false }),
+ authMiddleware,
   async (req, res) => {
     try {
       const { name, thumbnail, track } = req.body;
@@ -138,7 +149,7 @@ router.post(
 );
 router.get(
   "/edit/:songId/delete",
-  passport.authenticate("jwt", { session: false }),
+ authMiddleware,
   async (req, res) => {
     try {
       const { songId } = req.params;
@@ -153,7 +164,7 @@ router.get(
 // API to like a song
 router.get(
   "/like/:userId/:songId",
-  passport.authenticate("jwt", { session: false }),
+ authMiddleware,
   async (req, res) => {
     try {
       const { userId, songId } = req.params;
@@ -184,7 +195,7 @@ router.get(
 // API to remove a liked song
 router.get(
   "/liked/:userId/:songId",
-  passport.authenticate("jwt", { session: false }),
+ authMiddleware,
   async (req, res) => {
     try {
       const { userId, songId } = req.params;
@@ -206,36 +217,5 @@ router.get(
     }
   }
 );
-router.get(
-  "/likedsong/:userId",
-  passport.authenticate("jwt", { session: false }),
-  async (req, res) => {
-    try {
-      const { userId } = req.params;
-
-      // Find the user by userId
-      const user = await User.findById(userId);
-
-      if (!user) {
-        return res.status(404).json({ error: "User not found" });
-      }
-
-      const likedSongs = user.likedSongs;
-
-      if (!likedSongs || likedSongs.length === 0) {
-        return res.status(200).json({ err: "You haven't liked any song till now" });
-      }
-
-      // Fetch all liked songs and populate artist details in one query
-      const likedSongData = await Song.find({ _id: { $in: likedSongs } }).populate("artist");
-      console.log(likedSongData)
-      return res.status(200).json({ data: likedSongData });
-    } catch (err) {
-      console.error(err);
-      return res.status(500).json({ err: "Internal Server Error" });
-    }
-  }
-);
-
 
 module.exports = router;

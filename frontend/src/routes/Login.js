@@ -3,14 +3,14 @@ import { Icon } from "@iconify/react";
 import TextInput from "../components/TextInput";
 import PasswordInput from "../components/PasswordInput";
 import { Link, useNavigate } from "react-router-dom";
-import { makePOSTRequest } from "../utils/serverHelpers";
-import { useCookies } from "react-cookie";
+import {  postDataApi } from "../utils/serverHelpers";
 import { useForm } from "react-hook-form";
 import { toast } from "react-toastify";
 import logo from "../images/logo4.png";
+import { useAuth } from "../contexts/AuthContext";
 
 const LoginComponent = () => {
-  const [cookies, setCookie] = useCookies(["token"]);
+  const { loginCookie } = useAuth();
   const [loading, setLoading] = useState(null);
   const navigate = useNavigate();
   const {
@@ -26,32 +26,27 @@ const LoginComponent = () => {
         email: loginData.email.toLowerCase(),
         password: loginData.password,
       };
-      const response = await makePOSTRequest("/auth/login", data);
-
-      if (response && !response.err) {
-        const token = response.token;
-        const date = new Date();
-        date.setDate(date.getDate() + 10 * 60 * 60 * 1000);
-
-        // Store login details in local storage
-        toast.success("Successfully Login");
-        localStorage.setItem(
-          "currentUser",
-          JSON.stringify({
-            firstName: response.firstName,
-            lastName: response.lastName,
-            email: response.email,
-            isArtist: response.isArtist,
-            joinDate: response.joinDate,
-            username: response.username,
-            _id: response._id,
-          })
-        );
-        setCookie("token", token, { path: "/", expires: date });
-        navigate("/");
-      } else {
-        toast.error(response?.err || "Login failed");
+      const response = await postDataApi("/auth/login", data);
+      if (!response.success) {
+        return toast.error("Login failed");
       }
+      toast.success("Successfully Login");
+      loginCookie(response.token);
+      localStorage.setItem(
+        "currentUser",
+        JSON.stringify({
+          firstName: response.user.firstName,
+          lastName: response.user.lastName,
+          email:response.user.email,
+          profileBackground:response.user.profileBackground,
+          profileText:response.user.profileText,
+          username:response.user.username,
+          joinDate:response.user.joinDate,
+          isArtist: response.user.isArtist,
+          _id: response.user._id,
+        })
+      );
+      navigate("/");
     } catch (err) {
       setLoading(false);
       toast.error("An error occurred" + err);

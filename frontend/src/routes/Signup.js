@@ -4,7 +4,7 @@ import { Icon } from "@iconify/react";
 import TextInput from "../components/TextInput";
 import PasswordInput from "../components/PasswordInput";
 import { Link, useNavigate } from "react-router-dom";
-import { makePOSTRequest } from "../utils/serverHelpers";
+import {  postDataApi } from "../utils/serverHelpers";
 import { useForm } from "react-hook-form";
 import profileColor from "../containers/profileColor";
 import { toast } from "react-toastify";
@@ -45,7 +45,7 @@ const SignupComponent = () => {
         profileText: colorsCombo.text,
       };
 
-      const response = await makePOSTRequest("/auth/register", data);
+      const response = await postDataApi("/auth/register", data);
 
       if (response && !response.err) {
         const token = response.token;

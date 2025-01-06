@@ -1,26 +1,26 @@
-import { useState, useEffect, useCallback, useContext } from "react";
+import { useState, useEffect } from "react";
 import SingleSongCard from "../components/SingleSongCard";
-import { makeGETRequest } from "../utils/serverHelpers";
+import { getDataApi } from "../utils/serverHelpers";
 import LoggedInContainer from "../containers/LoggedInContainer";
 import { toast } from "react-toastify";
 import Loading from "../components/Loading";
-import NewHome from "../containers/LoggedInContainer";
 import { useAudio } from "../contexts/AudioContext";
+import { useAuth } from "../contexts/AuthContext";
 
 const LikedSongs = () => {
   const [songData, setSongData] = useState([]);
   const [loading, setLoading] = useState(true);
   const { currentSong } = useAudio();
+  const { cookies } = useAuth();
+  const token = cookies?.authToken;
 
-  const currentUser = JSON.parse(localStorage.getItem("currentUser"));
-  const userId = currentUser._id;
   useEffect(() => {
     const getData = async () => {
       try {
-        const response = await makeGETRequest("/song/likedsong/" + userId);
+        console.log(token)
+        const response = await getDataApi("/song/likesongs", token);
         if (response.data) {
           setSongData(response.data);
-          console.log(response.data);
         } else {
           toast.error(response.err);
         }
@@ -31,7 +31,7 @@ const LikedSongs = () => {
       }
     };
     getData();
-  }, []);
+  }, [token]);
 
   return (
     <LoggedInContainer curActiveScreen="likedsong">

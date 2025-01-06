@@ -5,18 +5,13 @@ import { secondsToHms } from "../containers/functionContainer.js";
 
 const AudioPlayerControls = ({ player = false }) => {
   const {
-    currentSong,
     isPlaying,
-    volume,
     togglePlayPause,
-    setAudioVolume,
     seekTo,
     progress,
     duration,
     nextTrack,
     prevTrack,
-    shuffle,
-    toggleShuffle,
   } = useAudio();
 
   const handleSeekChange = (value) => {

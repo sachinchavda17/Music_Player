@@ -1,23 +1,26 @@
-import { useContext, useEffect, useRef, useState } from "react";
-import { Howl } from "howler";
+import { useEffect, useState } from "react";
 import { Icon } from "@iconify/react";
-import { makeGETRequest } from "../utils/serverHelpers";
+import { getDataApi } from "../utils/serverHelpers";
 import { useAudio } from "../contexts/AudioContext";
-import { useCookies } from "react-cookie";
+import { useAuth } from "../contexts/AuthContext";
+import { useNavigate } from "react-router-dom";
 
 const SingleSongCard = ({ info, songList }) => {
   const [liked, setLiked] = useState(null);
   const [isLikedPopover, setIsLikedPopover] = useState(false);
-  const currentUser = JSON.parse(localStorage.getItem("currentUser"));
-  const [cookie, setCookie] = useCookies(["token"]);
-  const [isLoggedIn, setIsLoggedIn] = useState(Boolean(cookie.token));
-  const userId = currentUser?._id;
+  const { isAuthenticated, user, cookies } = useAuth();
+  const token = cookies?.authToken;
+  const userId = user?._id;
   const songId = info?._id;
   const { play, setPlaylist } = useAudio() || {};
+  const navigate = useNavigate()
 
   const fetchLikedStatus = async () => {
     try {
-      const response = await makeGETRequest(`/song/liked/${userId}/${songId}`);
+      const response = await getDataApi(
+        `/song/liked/${userId}/${songId}`,
+        token
+      );
       const likedStatus =
         response?.liked !== undefined ? response.liked : false;
       setLiked(likedStatus);
@@ -33,7 +36,10 @@ const SingleSongCard = ({ info, songList }) => {
 
   const likeToggleFetch = async () => {
     try {
-      const response = await makeGETRequest(`/song/like/${userId}/${songId}`);
+      const response = await getDataApi(
+        `/song/like/${userId}/${songId}`,
+        token
+      );
       setLiked(response.msg);
     } catch (err) {
       console.error("Error toggling like:", err);
@@ -41,23 +47,24 @@ const SingleSongCard = ({ info, songList }) => {
     }
   };
 
-  const handlePlay = () => {
-    if (isLoggedIn) {
-      // Set the current playlist dynamically when the user plays a song
+  const handleClick = () => {
+    if (isAuthenticated) {
       setPlaylist(songList);
       play(info);
+    }else{
+      navigate("/login")
     }
   };
 
   return (
     <div className="flex hover:bg-lightGray hover:bg-opacity-20 p-2 rounded border-lightGray">
       <div
-        onClick={handlePlay}
-        className="w-12 h-12 bg-cover bg-center"
+        onClick={handleClick}
+        className="w-12 h-12 bg-cover bg-cente cursor-pointer"
         style={{ backgroundImage: `url("${info.thumbnail}")` }}
       ></div>
-      <div className="flex w-full">
-        <div className="text-white flex justify-center flex-col pl-4 w-5/6">
+      <div className="flex w-full" >
+        <div className="text-white flex justify-center flex-col pl-4 w-5/6 cursor-pointer" onClick={handleClick}>
           <div>
             <span className="cursor-pointer hover:underline">{info.name}</span>
           </div>

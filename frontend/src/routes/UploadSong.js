@@ -2,11 +2,12 @@ import { useState } from "react";
 import { Icon } from "@iconify/react";
 import CloudinaryUpload from "../components/CloudinaryUpload";
 import TextInput from "../components/TextInput";
-import { makePOSTRequest } from "../utils/serverHelpers";
+import {  postDataApi } from "../utils/serverHelpers";
 import { useNavigate } from "react-router-dom";
 import LoggedInContainer from "../containers/LoggedInContainer";
 import { useForm } from "react-hook-form";
 import { toast } from "react-toastify";
+import { useAuth } from "../contexts/AuthContext";
 
 const UploadSong = () => {
   const [playlistUrl, setPlaylistUrl] = useState("");
@@ -14,13 +15,15 @@ const UploadSong = () => {
   const [thumbnailName, setThumbnailName] = useState();
   const [buttonLoading, setButtonLoading] = useState(null);
   const [uploadedSongFileName, setUploadedSongFileName] = useState();
+  const { cookies } = useAuth();
+  const token = cookies?.authToken;
   const navigate = useNavigate();
   const {
     register,
     handleSubmit,
     formState: { errors },
   } = useForm();
-  const currentUser = localStorage.getItem("currentUser");
+
   const submitSong = async (songData) => {
     try {
       setButtonLoading(true);
@@ -28,9 +31,8 @@ const UploadSong = () => {
         name: songData.name,
         thumbnail: thumbnail,
         track: playlistUrl,
-        userId: currentUser._id,
       };
-      const response = await makePOSTRequest("/song/create", data);
+      const response = await postDataApi("/song/create", data,token);
       if (response.err) {
         toast.error(response.err || "Error while creating song");
       } else {
@@ -41,9 +43,8 @@ const UploadSong = () => {
       }
     } catch (err) {
       toast.error(err.message);
-    }finally{
+    } finally {
       setButtonLoading(false);
-
     }
   };
 
@@ -115,7 +116,7 @@ const UploadSong = () => {
           </button>
         </form>
       </div>
-     </LoggedInContainer>
+    </LoggedInContainer>
   );
 };
 

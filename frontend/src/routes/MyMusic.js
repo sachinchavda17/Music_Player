@@ -1,20 +1,23 @@
-import { useState, useEffect, useCallback, useContext } from "react";
+import { useState, useEffect } from "react";
 import SingleSongCard from "../components/SingleSongCard";
-import { makeGETRequest } from "../utils/serverHelpers";
+import { getDataApi } from "../utils/serverHelpers";
 import LoggedInContainer from "../containers/LoggedInContainer";
 import { toast } from "react-toastify";
 import Loading from "../components/Loading";
 import { useAudio } from "../contexts/AudioContext";
+import { useAuth } from "../contexts/AuthContext";
 
 const MyMusic = () => {
   const [songData, setSongData] = useState([]);
   const [loading, setLoading] = useState(true);
   const { currentSong } = useAudio();
+  const { cookies } = useAuth();
+  const token = cookies?.authToken
 
   useEffect(() => {
     const getData = async () => {
       try {
-        const response = await makeGETRequest("/song/get/mysongs");
+        const response = await getDataApi("/song/get/mysongs", token);
         setSongData(response.data);
       } catch (error) {
         toast.error("Error fetching data");
@@ -23,7 +26,7 @@ const MyMusic = () => {
       }
     };
     getData();
-  }, []);
+  }, [token]);
 
   return (
     <LoggedInContainer curActiveScreen="myMusic">

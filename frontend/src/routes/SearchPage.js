@@ -1,13 +1,12 @@
-import { useContext, useState } from "react";
+import { useState } from "react";
 import LoggedInContainer from "../containers/LoggedInContainer";
 import { Icon } from "@iconify/react";
-import { makeGETRequest } from "../utils/serverHelpers";
+import { getDataApi } from "../utils/serverHelpers";
 import SingleSongCard from "../components/SingleSongCard";
 import { toast } from "react-toastify";
 import Loading from "../components/Loading";
-import { useCookies } from "react-cookie";
-import { Link } from "react-router-dom";
 import { useAudio } from "../contexts/AudioContext";
+import { useAuth } from "../contexts/AuthContext";
 
 const SearchPage = () => {
   const [isInputFocused, setIsInputFocused] = useState(false);
@@ -16,25 +15,18 @@ const SearchPage = () => {
   const [loading, setLoading] = useState(false);
   const { currentSong } = useAudio() || {};
 
-  const [cookie, setCookie, removeCookie] = useCookies(["token"]);
-  const [isLoggedIn, setIsLoggedIn] = useState(Boolean(cookie.token));
+  const { cookies } = useAuth();
+  const token = cookies?.authToken;
 
   const searchSong = async (searchText) => {
     try {
       if (!searchText) return;
       setLoading(true);
-      if (isLoggedIn) {
-        const response = await makeGETRequest(
-          "/song/get/songname/" + searchText
-        );
-        setSongData(response.data);
-      } else {
-        const response = await makeGETRequest(
-          "/song/get/logout/songname/" + searchText
-        );
-        setSongData(response.data);
-      }
-      console.log(songData);
+      const response = await getDataApi(
+        "/song/get/search/" + searchText,
+        token
+      );
+      setSongData(response.data);
     } catch (error) {
       toast.error("Error fetching data");
     } finally {
@@ -85,10 +77,8 @@ const SearchPage = () => {
               Showing search results for
               <span className="font-bold"> {searchText}</span>
             </div>
-            {songData.map((item) => (
-              <Link to={!isLoggedIn && "/login"} key={item._id}>
-                <SingleSongCard info={item} songList={songData} />
-              </Link>
+            {songData.map((item, ind) => (
+              <SingleSongCard info={item} songList={songData} key={ind} />
             ))}
           </div>
         ) : (
