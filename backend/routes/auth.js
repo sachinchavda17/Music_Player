@@ -60,12 +60,21 @@ router.post("/login", async (req, res) => {
     if (password !== userPassword) {
       return res.status(403).json({ err: "invalid Credentials" });
     }
-    
+
     const token = await createToken(user._id);
     // const userToReturn = { ...user.toJSON(), token };
-    delete user.password;
-    console.log(user)
-    return res.status(200).json({ user, token, success: true });
+    const returnUser = {
+      firstName: user.firstName,
+      lastName: user.lastName,
+      email: user.email,
+      profileBackground: user.profileBackground,
+      profileText: user.profileText,
+      username: user.username,
+      joinDate: user.joinDate,
+      isArtist: user.isArtist,
+      _id: user._id,
+    };
+    return res.status(200).json({ user: returnUser, token, success: true });
   } catch (error) {
     return res.status(400).json({ err: error, success: false });
   }
@@ -77,10 +86,10 @@ const createToken = async (userId) => {
   return token;
 };
 
-router.get("/profile",authMiddleware, async (req, res) => {
+router.get("/profile", authMiddleware, async (req, res) => {
   try {
     const { userId } = req.body;
-    const user = await User.findById(userId)
+    const user = await User.findById(userId);
     if (!user) {
       res.status(500).json({
         error: "User doesn't exixts please enter valid user id",

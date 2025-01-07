@@ -33,9 +33,9 @@ const MyMusic = () => {
       {loading ? (
         <Loading />
       ) : (
-        <div className={`${currentSong ? " mb-20 " : ""}`}>
+        <div className={""}>
           <div
-            className={`  text-white text-2xl font-semibold pb-4 pl-2 sm:pt-5`}
+            className={`text-white text-2xl font-semibold pb-4 pl-2 sm:pt-5`}
           >
             My Songs
           </div>

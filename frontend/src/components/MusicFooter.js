@@ -5,19 +5,15 @@ import { useAudio } from "../contexts/AudioContext.js";
 import { useAuth } from "../contexts/AuthContext.js";
 import { getDataApi } from "../utils/serverHelpers.js";
 import AudioPlayerControls from "./AudioPlayerControls.js";
+import spectrum from "../images/spectrum.gif";
+import spectrumPng from "../images/spectrum.png";
 
 const MusicFooter = () => {
   const {
     currentSong,
     isPlaying,
     volume,
-    togglePlayPause,
     setAudioVolume,
-    seekTo,
-    progress,
-    duration,
-    nextTrack,
-    prevTrack,
     shuffle,
     toggleShuffle,
   } = useAudio();
@@ -52,7 +48,10 @@ const MusicFooter = () => {
 
   const likeToggleFetch = async () => {
     try {
-      const response = await getDataApi(`/song/like/${userId}/${songId}`,token);
+      const response = await getDataApi(
+        `/song/like/${userId}/${songId}`,
+        token
+      );
       setLiked(response.msg);
     } catch (err) {
       console.error("Error toggling like:", err);
@@ -64,7 +63,6 @@ const MusicFooter = () => {
     fetchLikedStatus();
   }, [userId, songId]);
 
-
   return (
     <div
       className="fixed bottom-0 left-0 w-full bg-darkGray text-white px-4 py-4 sm:py-2 z-50"
@@ -72,16 +70,34 @@ const MusicFooter = () => {
     >
       <div className="flex items-center justify-between">
         {/* Left Section */}
-
         <Link
           to={"/playedsong"}
-          className="flex gap-2 items-center w-1/2 sm:w-1/4"
+          className="flex gap-2 items-center w-full sm:w-1/4"
         >
-          <img
-            src={currentSong?.thumbnail || "/placeholder.jpg"}
-            alt="Song Cover"
-            className="w-10 h-10 rounded sm:w-16 sm:h-16 mr-4"
-          />
+          <div className="relative w-10 h-10 rounded sm:w-16 sm:h-16 mr-4 flex items-center justify-center">
+            {/* Song Thumbnail */}
+            <img
+              src={currentSong?.thumbnail || "/placeholder.jpg"}
+              alt="Song Cover"
+              className="w-full h-full object-cover rounded"
+            />
+
+            {/* Spectrum Image - Only appears when song is playing */}
+            {currentSong && currentSong?._id && (
+              <img
+                src={isPlaying ? spectrum : spectrumPng}
+                alt="spectrum"
+                className="absolute top-0 left-0 z-10 bg-transparent h-10 w-10 sm:h-16 sm:w-16 rounded-full"
+              />
+            )}
+
+            {/* Dark Overlay for Thumbnail */}
+            {currentSong && currentSong?._id && (
+              <div className="absolute inset-0 bg-black opacity-50 "></div>
+            )}
+          </div>
+
+          {/* Song Name and Artist */}
           <div>
             <p className="text-sm sm:text-base">
               {currentSong?.name || "No Track"}
@@ -98,9 +114,8 @@ const MusicFooter = () => {
         <AudioPlayerControls />
 
         {/* Right Section */}
-        <div className="flex items-center space-x-4 w-1/4">
-          {/* Shuffle Toggle */}
-
+        <div className="flex items-center justify-end space-x-4 w-1/4">
+          {/* Shuffle Icon */}
           <Icon
             icon="mdi:shuffle-variant"
             onClick={() => toggleShuffle()}
@@ -109,11 +124,13 @@ const MusicFooter = () => {
               shuffle ? "text-primary" : "text-lightGray hover:text-white"
             }`}
           />
+
+          {/* Like Button */}
           <div className="relative">
             <Icon
               onMouseEnter={() => setIsLikedPopover(true)}
               onMouseLeave={() => setIsLikedPopover(false)}
-              icon={liked ? "ph:heart-fill" : "ph:heart-bold"}
+              icon={liked ? "mdi:heart" : "mdi:heart-outline"}
               fontSize={25}
               className={`cursor-pointer ${
                 liked ? "text-primary" : "text-lightGray hover:text-white"
@@ -130,6 +147,8 @@ const MusicFooter = () => {
               </div>
             )}
           </div>
+
+          {/* Volume Control */}
           <div className="relative">
             <button
               onMouseEnter={() => setIsPopoverVisible(true)}
@@ -159,6 +178,7 @@ const MusicFooter = () => {
             )}
           </div>
 
+          {/* Volume Slider */}
           <input
             style={{
               background: `linear-gradient(to right, #e42012 ${

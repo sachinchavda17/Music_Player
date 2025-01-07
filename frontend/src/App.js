@@ -20,9 +20,8 @@ function App() {
   const { cookies } = useAuth();
 
   return (
-    <div className="w-screen h-screen font-poppins">
+    <div className="font-poppins">
       <BrowserRouter>
-
         {cookies.authToken ? (
           // logged in routes
           <AudioProvider>

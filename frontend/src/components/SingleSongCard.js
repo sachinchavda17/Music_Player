@@ -4,6 +4,8 @@ import { getDataApi } from "../utils/serverHelpers";
 import { useAudio } from "../contexts/AudioContext";
 import { useAuth } from "../contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
+import spectrum from "../images/spectrum.gif";
+import spectrumPng from "../images/spectrum.png";
 
 const SingleSongCard = ({ info, songList }) => {
   const [liked, setLiked] = useState(null);
@@ -12,8 +14,8 @@ const SingleSongCard = ({ info, songList }) => {
   const token = cookies?.authToken;
   const userId = user?._id;
   const songId = info?._id;
-  const { play, setPlaylist } = useAudio() || {};
-  const navigate = useNavigate()
+  const { play, setPlaylist, isPlaying, currentSong } = useAudio() || {};
+  const navigate = useNavigate();
 
   const fetchLikedStatus = async () => {
     try {
@@ -51,8 +53,8 @@ const SingleSongCard = ({ info, songList }) => {
     if (isAuthenticated) {
       setPlaylist(songList);
       play(info);
-    }else{
-      navigate("/login")
+    } else {
+      navigate("/login");
     }
   };
 
@@ -60,11 +62,27 @@ const SingleSongCard = ({ info, songList }) => {
     <div className="flex hover:bg-lightGray hover:bg-opacity-20 p-2 rounded border-lightGray">
       <div
         onClick={handleClick}
-        className="w-12 h-12 bg-cover bg-cente cursor-pointer"
-        style={{ backgroundImage: `url("${info.thumbnail}")` }}
-      ></div>
-      <div className="flex w-full" >
-        <div className="text-white flex justify-center flex-col pl-4 w-5/6 cursor-pointer" onClick={handleClick}>
+        className="w-12 h-12 bg-cover bg-cente cursor-pointer relative "
+        style={{
+          backgroundImage: `url("${info.thumbnail}")`,
+        }}
+      >
+        {currentSong && currentSong?._id === info?._id && (
+          <>
+            <img
+              src={isPlaying ? spectrum : spectrumPng}
+              alt="spectrum"
+              className="z-10 absolute top-0 left-0 rounded-full bg-transparent h-10 "
+            />
+            <div className="z-0 absolute inset-0 bg-black opacity-50 w-full h-full "></div>
+          </>
+        )}
+      </div>
+      <div className="flex w-full">
+        <div
+          className="text-white flex justify-center flex-col pl-4 w-5/6 cursor-pointer"
+          onClick={handleClick}
+        >
           <div>
             <span className="cursor-pointer hover:underline">{info.name}</span>
           </div>
@@ -80,7 +98,7 @@ const SingleSongCard = ({ info, songList }) => {
             <Icon
               onMouseEnter={() => setIsLikedPopover(true)}
               onMouseLeave={() => setIsLikedPopover(false)}
-              icon={liked ? "ph:heart-fill" : "ph:heart-bold"}
+              icon={liked ? "mdi:heart" : "mdi:heart-outline"}
               fontSize={25}
               className={`cursor-pointer ${
                 liked ? "text-primary" : "text-lightGray hover:text-white"

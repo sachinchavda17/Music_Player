@@ -47,6 +47,7 @@ export const AuthContextProvider = ({ children }) => {
         logoutCookie,
         cookies,
         user,
+        setUser,
         token,
       }}
     >

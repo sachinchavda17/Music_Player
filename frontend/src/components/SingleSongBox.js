@@ -29,19 +29,23 @@ const SingleSongBox = ({ item, songList, edit }) => {
       <div className="bg-black bg-opacity-40 w-full relative  rounded-lg hover:bg-lightGray hover:bg-opacity-20">
         <div className="overflow-hidden">
           <img
-            className="h-34 sm:h-44 lg:h-52  w-full transform scale-100 hover:scale-110 transition-transform duration-10 "
+            className="h-34 sm:h-44 lg:h-52 z-10 w-full transform scale-100 hover:scale-110 transition-transform duration-10 "
             src={item?.thumbnail}
             alt="label"
           />
+          {currentSong && currentSong?._id === item?._id && (
+            // <div className="text-primary font-bold">Now Playing</div>
+            <>
+              <img
+                src={isPlaying ? spectrum : spectrumPng}
+                alt="spectrum"
+                className="z-10 absolute top-0 right-0 rounded-full bg-transparent h-10 "
+              />
+              <div className="z-0 absolute inset-0 bg-black opacity-50 w-full h-full "></div>
+            </>
+          )}
         </div>
-        {currentSong && currentSong?._id === item?._id && (
-          // <div className="text-primary font-bold">Now Playing</div>
-          <img
-            src={isPlaying ? spectrum : spectrumPng}
-            alt="spectrum"
-            className="absolute top-0 right-0 rounded-full bg-transparent h-10 "
-          />
-        )}
+
         <div className="px-4 py-3">
           <div className="text-lightGray-light text-sm sm:text-base font-semibold py-1">
             {item?.name}

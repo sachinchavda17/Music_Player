@@ -11,7 +11,7 @@ import { useAudio } from "../contexts/AudioContext";
 const Home = () => {
   const [songData, setSongData] = useState([]);
   const [loading, setLoading] = useState(true);
-  const { isAuthenticated ,token} = useAuth();
+  const { isAuthenticated, token } = useAuth();
   const { currentSong } = useAudio() || {}; // Use only required context values
   useEffect(() => {
     const getData = async () => {
@@ -40,9 +40,7 @@ const Home = () => {
         <SongNotAvailable />
       ) : (
         <div
-          className={`${
-            currentSong ? "mb-20" : ""
-          } py-5 grid gap-2 grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-6 overflow-auto max-lg:grid-cols-3 max-md:grid-cols-2`}
+          className={`pt-2 grid gap-2 grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-6 overflow-auto max-lg:grid-cols-3 max-md:grid-cols-2`}
         >
           {songData.map((item, ind) => (
             <SingleSongBox item={item} songList={songData} key={ind} />

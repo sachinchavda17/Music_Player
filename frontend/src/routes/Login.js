@@ -3,14 +3,14 @@ import { Icon } from "@iconify/react";
 import TextInput from "../components/TextInput";
 import PasswordInput from "../components/PasswordInput";
 import { Link, useNavigate } from "react-router-dom";
-import {  postDataApi } from "../utils/serverHelpers";
+import { postDataApi } from "../utils/serverHelpers";
 import { useForm } from "react-hook-form";
 import { toast } from "react-toastify";
 import logo from "../images/logo4.png";
 import { useAuth } from "../contexts/AuthContext";
 
 const LoginComponent = () => {
-  const { loginCookie } = useAuth();
+  const { loginCookie, setUser } = useAuth();
   const [loading, setLoading] = useState(null);
   const navigate = useNavigate();
   const {
@@ -31,21 +31,9 @@ const LoginComponent = () => {
         return toast.error("Login failed");
       }
       toast.success("Successfully Login");
+      setUser(response.user);
       loginCookie(response.token);
-      localStorage.setItem(
-        "currentUser",
-        JSON.stringify({
-          firstName: response.user.firstName,
-          lastName: response.user.lastName,
-          email:response.user.email,
-          profileBackground:response.user.profileBackground,
-          profileText:response.user.profileText,
-          username:response.user.username,
-          joinDate:response.user.joinDate,
-          isArtist: response.user.isArtist,
-          _id: response.user._id,
-        })
-      );
+      localStorage.setItem("currentUser", JSON.stringify(response.user));
       navigate("/");
     } catch (err) {
       setLoading(false);
