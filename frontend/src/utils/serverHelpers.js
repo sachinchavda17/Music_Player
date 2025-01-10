@@ -1,3 +1,4 @@
+import axios from "axios";
 const BASE_URL = process.env.REACT_APP_BACKEND_URL;
 
 // Generalized GET request
@@ -91,6 +92,27 @@ export const deleteDataApi = async (endpoint, token) => {
     return await response.json();
   } catch (error) {
     console.error("Error deleting data:", error);
+    throw error;
+  }
+};
+
+export const fileUploadHandler = async (endpoint, method, formData, token) => {
+  try {
+    const config = {
+      headers: {
+        "Content-Type": "multipart/form-data",
+        Authorization: `Bearer ${token}`,
+      },
+    };
+
+    const response =
+      method === "post"
+        ? await axios.post(`${BASE_URL}${endpoint}`, formData, config)
+        : await axios.put(`${BASE_URL}${endpoint}`, formData, config);
+    console.log(response);
+    return response.data;
+  } catch (error) {
+    console.error(error);
     throw error;
   }
 };

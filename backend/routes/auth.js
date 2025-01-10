@@ -103,15 +103,60 @@ router.get("/profile", authMiddleware, async (req, res) => {
   }
 });
 
-// router.post("/user-detail", async (req, res) => {
-//   try {
-//     const  {email}  = req.body;
-//     console.log(email);
-//     const user = await User.findOne({ email: email });
-//     res.status(200).send({ user: user });
-//   } catch (error) {
-//     res.status(400).send({ err: "cookie not found" });
-//   }
-// });
+// API to update user details
+router.put("/update", authMiddleware, async (req, res) => {
+  try {
+    const { email, username, firstName, lastName, isArtist } = req.body;
+
+    // Check for required fields
+    if (
+      !email &&
+      !username &&
+      !firstName &&
+      !lastName &&
+      isArtist === undefined
+    ) {
+      return res
+        .status(400)
+        .json({ success: false, message: "No fields to update provided." });
+    }
+
+    // Get userId from the auth middleware
+    const { userId } = req.body;
+
+    // Find the user by ID and update
+    const updatedUser = await User.findByIdAndUpdate(
+      userId,
+      {
+        ...(email && { email }),
+        ...(username && { username }),
+        ...(firstName && { firstName }),
+        ...(lastName && { lastName }),
+        ...(isArtist !== undefined && { isArtist }),
+      },
+      { new: true } // Return the updated document
+    );
+
+    if (!updatedUser) {
+      return res
+        .status(404)
+        .json({ success: false, message: "User not found." });
+    }
+
+    res
+      .status(200)
+      .json({
+        success: true,
+        message: "User updated successfully.",
+        user: updatedUser,
+      });
+  } catch (error) {
+    console.error("Error updating user:", error);
+    res.status(500).json({
+      success: false,
+      message: "An error occurred while updating the user.",
+    });
+  }
+});
 
 module.exports = router;

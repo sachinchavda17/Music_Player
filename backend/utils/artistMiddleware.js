@@ -1,6 +1,7 @@
 const jwt = require("jsonwebtoken");
+const User = require("../models/User");
 
-const authMiddleware = async (req, res, next) => {
+const artistMiddleware = async (req, res, next) => {
   try {
     // Check for the token in the Authorization header
     const authHeader = req.headers.authorization;
@@ -24,9 +25,22 @@ const authMiddleware = async (req, res, next) => {
     const decoded = jwt.verify(token, process.env.SECRET_KEY);
 
     req.body.userId = decoded.userId;
+    const user = await User.findOne({ _id: decoded.userId });
+    if (!user) {
+      return res.status(401).json({
+        success: false,
+        error: "Invalid user Please login again or signup",
+      });
+    }
+    if (!user.isArtist) {
+      return res.status(401).json({
+        success: false,
+        error: "You are not artist to edit song details.",
+      });
+    }
     next();
   } catch (error) {
-    console.error("Error in Auth Middleware", error);
+    console.error("Error in artist Middleware", error);
 
     if (error instanceof jwt.JsonWebTokenError) {
       return res
@@ -46,8 +60,4 @@ const authMiddleware = async (req, res, next) => {
   }
 };
 
-
-
-
-
-module.exports = authMiddleware;
+module.exports = artistMiddleware;

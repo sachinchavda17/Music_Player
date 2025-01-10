@@ -6,26 +6,25 @@ import { useAuth } from "../contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
 import spectrum from "../images/spectrum.gif";
 import spectrumPng from "../images/spectrum.png";
+import { toast } from "react-toastify";
 
 const SingleSongCard = ({ info, songList }) => {
-  const [liked, setLiked] = useState(null);
+  const [liked, setLiked] = useState(false);
   const [isLikedPopover, setIsLikedPopover] = useState(false);
-  const { isAuthenticated, user, cookies } = useAuth();
+  const { isAuthenticated, cookies } = useAuth();
   const token = cookies?.authToken;
-  const userId = user?._id;
   const songId = info?._id;
   const { play, setPlaylist, isPlaying, currentSong } = useAudio() || {};
   const navigate = useNavigate();
 
   const fetchLikedStatus = async () => {
     try {
-      const response = await getDataApi(
-        `/song/liked/${userId}/${songId}`,
-        token
-      );
+      const response = await getDataApi(`/song/like-status/${songId}`, token);
       const likedStatus =
         response?.liked !== undefined ? response.liked : false;
-      setLiked(likedStatus);
+      if (response.success) {
+        setLiked(likedStatus);
+      }
     } catch (err) {
       console.error("Error fetching liked status:", err);
       setLiked(false);
@@ -34,15 +33,18 @@ const SingleSongCard = ({ info, songList }) => {
 
   useEffect(() => {
     fetchLikedStatus();
-  }, [userId, songId]); // Only fetch liked status when userId or songId changes
+  }, [songId]);
 
   const likeToggleFetch = async () => {
     try {
-      const response = await getDataApi(
-        `/song/like/${userId}/${songId}`,
-        token
-      );
-      setLiked(response.msg);
+      const response = await getDataApi(`/song/like/${songId}`, token);
+      console.log(response);
+      if (response.success) {
+        setLiked(response.liked);
+        toast.success(response.msg || "Liked status changed");
+      } else {
+        toast.error(response.err || "sorry!! can't like your song");
+      }
     } catch (err) {
       console.error("Error toggling like:", err);
       setLiked("Error toggling like");

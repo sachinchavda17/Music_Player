@@ -107,14 +107,16 @@ const Navbar = ({ toggleSidebar }) => {
                       >
                         Profile
                       </Link>
-                      <Link
-                        to={"/uploadSong"}
-                        className={
-                          "bg-darkGray block px-4 py-2 text-sm cursor-pointer text-lightGray-light hover:bg-darkGray-light"
-                        }
-                      >
-                        Upload Song
-                      </Link>
+                      {isAuthenticated && user?.isArtist && (
+                        <Link
+                          to={"/uploadSong"}
+                          className={
+                            "bg-darkGray block px-4 py-2 text-sm cursor-pointer text-lightGray-light hover:bg-darkGray-light"
+                          }
+                        >
+                          Upload Song
+                        </Link>
+                      )}
                       <div
                         onClick={handleLogout}
                         className={

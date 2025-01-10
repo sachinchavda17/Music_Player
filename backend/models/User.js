@@ -26,9 +26,15 @@ const User = new mongoose.Schema({
     type: Date,
     default: Date.now(),
   },
+  // likedSongs: [
+  //   {
+  //     type: [mongoose.Types.ObjectId],
+  //     ref: "Song",
+  //   },
+  // ],
   likedSongs: [
     {
-      type: [mongoose.Types.ObjectId],
+      type: mongoose.Types.ObjectId,
       ref: "Song",
     },
   ],

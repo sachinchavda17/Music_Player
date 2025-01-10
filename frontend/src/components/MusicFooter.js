@@ -7,6 +7,7 @@ import { getDataApi } from "../utils/serverHelpers.js";
 import AudioPlayerControls from "./AudioPlayerControls.js";
 import spectrum from "../images/spectrum.gif";
 import spectrumPng from "../images/spectrum.png";
+import { toast } from "react-toastify";
 
 const MusicFooter = () => {
   const {
@@ -18,41 +19,54 @@ const MusicFooter = () => {
     toggleShuffle,
   } = useAudio();
 
-  const currentUser = JSON.parse(localStorage.getItem("currentUser"));
   const [isPopoverVisible, setIsPopoverVisible] = useState(false);
   const [isLikedPopover, setIsLikedPopover] = useState(false);
   const [liked, setLiked] = useState(false);
+  const [isMuted, setIsMuted] = useState(false);
   const { cookies } = useAuth();
   const token = cookies?.authToken;
-  const userId = currentUser?._id;
   const songId = currentSong?._id;
 
   const handleVolumeChange = (e) => {
     setAudioVolume(parseFloat(e.target.value));
+    setIsMuted(false);
+  };
+
+  const handleToggleMute = () => {
+    if (isMuted) {
+      setAudioVolume(0.5); // Set to a specific volume when unmuting
+      setIsMuted(false);
+    } else {
+      setAudioVolume(0); // Mute the audio
+      setIsMuted(true);
+    }
   };
 
   const fetchLikedStatus = async () => {
     try {
-      const response = await getDataApi(
-        `/song/liked/${userId}/${songId}`,
-        token
-      );
+      const response = await getDataApi(`/song/like-status/${songId}`, token);
       const likedStatus =
         response?.liked !== undefined ? response.liked : false;
-      setLiked(likedStatus);
+      if (response.success) {
+        setLiked(likedStatus);
+      } else {
+        toast.error("Error fetching like status..");
+      }
     } catch (err) {
       console.error("Error fetching liked status:", err);
       setLiked(false);
     }
   };
-
   const likeToggleFetch = async () => {
     try {
-      const response = await getDataApi(
-        `/song/like/${userId}/${songId}`,
-        token
-      );
-      setLiked(response.msg);
+      const response = await getDataApi(`/song/like/${songId}`, token);
+      console.log(response);
+      if (response.success) {
+        setLiked(response.liked);
+        toast.success(response.msg || "Liked status changed");
+      } else {
+        toast.error(response.err || "sorry!! can't like your song");
+      }
     } catch (err) {
       console.error("Error toggling like:", err);
       setLiked("Error toggling like");
@@ -61,7 +75,7 @@ const MusicFooter = () => {
 
   useEffect(() => {
     fetchLikedStatus();
-  }, [userId, songId]);
+  }, [songId]);
 
   return (
     <div
@@ -126,7 +140,7 @@ const MusicFooter = () => {
           />
 
           {/* Like Button */}
-          <div className="relative">
+          <div className="relative flex items-center justify-center">
             <Icon
               onMouseEnter={() => setIsLikedPopover(true)}
               onMouseLeave={() => setIsLikedPopover(false)}
@@ -149,21 +163,22 @@ const MusicFooter = () => {
           </div>
 
           {/* Volume Control */}
-          <div className="relative">
+          <div className="relative flex items-center justify-center">
             <button
               onMouseEnter={() => setIsPopoverVisible(true)}
               onMouseLeave={() => setIsPopoverVisible(false)}
             >
               <Icon
+                onClick={() => handleToggleMute()}
                 icon={volume === 0 ? "bi:volume-mute" : "bi:volume-up"}
                 fontSize={25}
                 className={`cursor-pointer ${
                   volume === 0
                     ? "text-lightGray"
                     : volume < 0.5
-                    ? "text-lightGray-light"
-                    : "text-white"
-                } hover:text-gray-100 hidden sm:block`}
+                    ? "text-lightGray"
+                    : "text-lightGray-light"
+                } hover:text-gray-100 hidden sm:block `}
               />
             </button>
 
@@ -191,7 +206,7 @@ const MusicFooter = () => {
             onChange={handleVolumeChange}
             min="0"
             max="1"
-            step="0.01"
+            step="0.1"
           />
         </div>
       </div>

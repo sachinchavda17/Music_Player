@@ -13,11 +13,11 @@ import EditSongPage from "./components/EditSong";
 import LikedSongs from "./routes/LikedSongs";
 import { ToastContainer } from "react-toastify";
 import { AudioProvider } from "./contexts/AudioContext";
-import {  useAuth } from "./contexts/AuthContext";
+import { useAuth } from "./contexts/AuthContext";
 import Home from "./routes/Home";
 
 function App() {
-  const { cookies } = useAuth();
+  const { cookies, user } = useAuth();
 
   return (
     <div className="font-poppins">
@@ -27,16 +27,19 @@ function App() {
           <AudioProvider>
             <Routes>
               <Route path="/" element={<Home />} />
-              <Route path="/uploadSong" element={<UploadSong />} />
-              <Route path="/myMusic" element={<MyMusic />} />
               <Route path="/search" element={<SearchPage />} />
               <Route path="/profile" element={<Userprofile />} />
-              <Route path="/music" element={<MusicFooter />} />
               <Route path="/playedsong" element={<SongDetails />} />
-              <Route path="/edit" element={<EditPage />} />
-              <Route path="/edit/:songId" element={<EditSongPage />} />
-              <Route path="/profileedit/:userId" element={<EditSongPage />} />
               <Route path="/likedsong" element={<LikedSongs />} />
+              {user?.isArtist && (
+                <>
+                  <Route path="/uploadSong" element={<UploadSong />} />
+                  <Route path="/myMusic" element={<MyMusic />} />
+                  <Route path="/edit" element={<EditPage />} />
+                  <Route path="/edit/:songId" element={<EditSongPage />} />
+                  <Route path="*" element={<Navigate to="/" />} />
+                </>
+              )}
               <Route path="*" element={<Navigate to="/" />} />
             </Routes>
           </AudioProvider>
