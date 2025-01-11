@@ -28,21 +28,6 @@ export const AudioProvider = ({ children }) => {
       ? playlist[currentIndex]
       : null;
 
-  // const play = (song = null) => {
-  //   // for fresh song
-  //   if (song?.track && typeof song.track === "string") {
-  //     // If song is not in playlist, add it
-  //     if (!playlist.some((s) => s._id === song._id)) {
-  //       setPlaylist((prevPlaylist) => [...prevPlaylist, song]);
-  //     }
-  //     audioRef.current.src = song.track;
-  //     setCurrentIndex(playlist.indexOf(song));
-  //   }
-  //   // current playing song
-  //   audioRef.current.play();
-  //   setIsPlaying(true);
-  // };
-
   const play = (song = null) => {
     if (song?.track && typeof song.track === "string") {
       // If the song is not in the playlist, add it

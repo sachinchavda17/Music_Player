@@ -109,10 +109,18 @@ export const fileUploadHandler = async (endpoint, method, formData, token) => {
       method === "post"
         ? await axios.post(`${BASE_URL}${endpoint}`, formData, config)
         : await axios.put(`${BASE_URL}${endpoint}`, formData, config);
-    console.log(response);
-    return response.data;
+    if (response.data.success) {
+      console.log(response.data);
+      return response.data; // Return success response
+    } else {
+      throw new Error(response.data.err || "An error occurred.");
+    }
   } catch (error) {
-    console.error(error);
-    throw error;
+    // Handle specific error from server
+    if (error.response && error.response.data) {
+      throw new Error(error.response.data.err || "An error occurred.");
+    }
+    // Generic error
+    throw new Error("Failed to upload file. Please try again.");
   }
 };

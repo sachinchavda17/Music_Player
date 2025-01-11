@@ -4,7 +4,7 @@ const Song = require("../models/Song");
 const User = require("../models/User");
 const authMiddleware = require("../utils/authMiddleware");
 const fileUpload = require("express-fileupload");
-const cloudinary = require("../utils/cloudinary")
+const cloudinary = require("../utils/cloudinary");
 const router = express.Router();
 
 router.use(
@@ -86,47 +86,73 @@ router.get("/likesongs", authMiddleware, async (req, res) => {
   }
 });
 
-
 router.post("/create-new", authMiddleware, async (req, res) => {
   try {
-    const { userId, name } = req.body;
+    const { userId, name, thumbnail, track } = req.body;
     console.log(req.body);
+
     // Validate required fields
     if (!name) {
-      return res.status(400).json({ error: "Song name is required." });
+      return res.status(400).json({ err: "Song name is required." });
     }
 
-    if (!req.files || !req.files.thumbnail || !req.files.track) {
-      return res
-        .status(400)
-        .json({ error: "Thumbnail and track files are required." });
+    let thumbnailUrl;
+    let trackUrl;
+
+    // Handle thumbnail - check if it's a URL or file upload
+    if (thumbnail) {
+      if (thumbnail.startsWith("http") || thumbnail.startsWith("https")) {
+        // If thumbnail is a URL, use the provided URL
+        thumbnailUrl = thumbnail;
+      } else {
+        // If thumbnail is a file, upload it to Cloudinary
+        if (!req.files || !req.files.thumbnail) {
+          return res.status(400).json({ err: "Thumbnail is required." });
+        }
+        const thumbnailFile = req.files.thumbnail;
+        // Upload thumbnail to Cloudinary
+        const thumbnailCloud = await cloudinary.v2.uploader
+          .upload(thumbnailFile.tempFilePath, { folder: "songs" })
+          .catch((err) => {
+            throw new Error("Failed to upload thumbnail.");
+          });
+        thumbnailUrl = thumbnailCloud.secure_url;
+      }
+    } else {
+      return res.status(400).json({ err: "Thumbnail is required." });
     }
 
-    const thumbnailFile = req.files.thumbnail;
-    const trackFile = req.files.track;
-
-    // Upload thumbnail to Cloudinary
-    const thumbnailCloud = await cloudinary.v2.uploader
-      .upload(thumbnailFile.tempFilePath, { folder: "songs" })
-      .catch((err) => {
-        throw new Error("Failed to upload thumbnail.");
-      });
-
-    // Upload track to Cloudinary
-    const trackCloud = await cloudinary.v2.uploader
-      .upload(
-        trackFile.tempFilePath,
-        { folder: "songs", resource_type: "video" } // `video` is preferred for audio files in Cloudinary
-      )
-      .catch((err) => {
-        throw new Error("Failed to upload track.");
-      });
+    // Handle track - check if it's a URL or file upload
+    if (track) {
+      if (track.startsWith("http") || track.startsWith("https")) {
+        // If track is a URL, use the provided URL
+        trackUrl = track;
+      } else {
+        // If track is a file, upload it to Cloudinary
+        if (!req.files || !req.files.track) {
+          return res.status(400).json({ err: "Track is required." });
+        }
+        const trackFile = req.files.track;
+        // Upload track to Cloudinary
+        const trackCloud = await cloudinary.v2.uploader
+          .upload(
+            trackFile.tempFilePath,
+            { folder: "songs", resource_type: "video" } // `video` is preferred for audio files in Cloudinary
+          )
+          .catch((err) => {
+            throw new Error("Failed to upload track.");
+          });
+        trackUrl = trackCloud.secure_url;
+      }
+    } else {
+      return res.status(400).json({ err: "Track is required." });
+    }
 
     // Create new song document
     const newSong = new Song({
       name,
-      thumbnail: thumbnailCloud.secure_url,
-      track: trackCloud.secure_url,
+      thumbnail: thumbnailUrl,
+      track: trackUrl,
       artist: userId,
     });
 
@@ -143,138 +169,154 @@ router.post("/create-new", authMiddleware, async (req, res) => {
   } catch (error) {
     console.error("Error creating song:", error);
     res.status(500).json({
-      error: error.message || "Failed to create song",
+      err: error.message || "Failed to create song",
       success: false,
     });
   }
 });
 
 
-router.get("/edit/:songId", authMiddleware, async (req, res) => {
+router.get("/:songId", authMiddleware, async (req, res) => {
   try {
     const { songId } = req.params;
     const song = await Song.findOne({ _id: songId }).populate();
-    return res.status(200).json({ data: song });
+    return res.status(200).json({ song, success: true });
   } catch (error) {
-    return res.status(301).json({ err: error });
+    return res.status(301).json({ err: error, success: false });
   }
 });
 
+router.put("/edit/:id/update"),
+  authMiddleware,
+  async (req, res) => {
+    try {
+      const { id } = req.params;
+      const { name, thumbnail, track } = req.body;
 
-const updateFood = async (req, res) => {
+      // Validate required fields
+      if (!name || !thumbnail || !track) {
+        return res.status(400).json({
+          success: false,
+          err: "Name, thumbnail and track are required.",
+        });
+      }
+
+      // Prepare the updated data
+      const updatedData = { name, thumbnail, track };
+
+      // Find the food item to update
+      const song = await Song.findById(id);
+      if (!song) {
+        return res.status(404).json({ err: "Song not found", success: false });
+      }
+
+      // If there's a new image, handle Cloudinary upload
+      if (req.files && req.files.thumbnail) {
+        const thumbnailFile = req.files.thumbnail;
+
+        // If the food already has an image, remove the old image from Cloudinary
+        if (song.thumbnail) {
+          const publicId = food.image.split("/").pop().split(".")[0]; // Get public ID from the image URL
+          await cloudinary.v2.uploader.destroy(`songs/${publicId}`);
+        }
+
+        // Upload new image to Cloudinary
+        const result = await cloudinary.v2.uploader.upload(
+          thumbnailFile.tempFilePath,
+          { folder: "songs" }
+        );
+
+        // Update the image URL
+        updatedData.thumbnail = result.secure_url;
+      }
+      // If there's a new image, handle Cloudinary upload
+      if (req.files && req.files.track) {
+        const trackFile = req.files.track;
+
+        // If the food already has an image, remove the old image from Cloudinary
+        if (song.track) {
+          const publicId = food.image.split("/").pop().split(".")[0]; // Get public ID from the image URL
+          await cloudinary.v2.uploader.destroy(`songs/${publicId}`);
+        }
+
+        // Upload new image to Cloudinary
+        const result = await cloudinary.v2.uploader.upload(
+          trackFile.tempFilePath,
+          { folder: "songs" }
+        );
+
+        // Update the image URL
+        updatedData.track = result.secure_url;
+      }
+
+      // Update the food item in the database
+      const updatedSong = await Song.findByIdAndUpdate(id, updatedData, {
+        new: true, // Return the updated document
+      });
+
+      res.status(200).json({
+        message: "Song updated successfully!",
+        song: updatedSong,
+        success: true,
+      });
+    } catch (error) {
+      console.error("Error updating food:", error);
+      res.status(500).json({ err: "Failed to update food", success: false });
+    }
+  };
+
+router.delete("/edit/:id/delete", authMiddleware, async (req, res) => {
   try {
     const { id } = req.params;
-    const { name, desc, price, category, ratings } = req.body;
 
-    // Validate required fields
-    if (!name || !desc || !price || !category) {
-      return res.status(400).json({
+    // Find the song to be removed
+    const song = await Song.findById(id);
+
+    if (!song) {
+      return res.status(404).json({ success: false, err: "Song not found" });
+    }
+
+    // Helper function to check if a URL belongs to Cloudinary
+    const isCloudinaryURL = (url) =>
+      url.includes("res.cloudinary.com") && url.includes("/songs/");
+
+    // Handle thumbnail deletion
+    if (song.thumbnail && isCloudinaryURL(song.thumbnail)) {
+      const thumbnailPublicId = song.thumbnail.split("/").pop().split(".")[0];
+      await cloudinary.v2.uploader
+        .destroy(`songs/${thumbnailPublicId}`)
+        .catch((err) => {
+          console.warn(
+            "Failed to delete thumbnail from Cloudinary:",
+            err.message
+          );
+        });
+    }
+
+    // Handle track deletion
+    if (song.track && isCloudinaryURL(song.track)) {
+      const trackPublicId = song.track.split("/").pop().split(".")[0];
+      await cloudinary.v2.uploader
+        .destroy(`songs/${trackPublicId}`)
+        .catch((err) => {
+          console.warn("Failed to delete track from Cloudinary:", err.message);
+        });
+    }
+
+    // Delete the song from the database
+    const deleteResult = await Song.deleteOne({ _id: id });
+
+    if (deleteResult.deletedCount === 0) {
+      return res.status(500).json({
         success: false,
-        error: "Name, description, price, and category are required.",
+        message: "Failed to delete song from database",
       });
     }
 
-    // Prepare the updated data
-    const updatedData = { name, desc, price, category };
-
-    // Add ratings if provided
-    if (ratings !== undefined) {
-      const ratingNumber = Number(ratings);
-      // Assuming rating should be a number and between 1-5
-      if (isNaN(ratingNumber) || ratingNumber < 1 || ratingNumber > 5) {
-        return res
-          .status(400)
-          .json({
-            success: false,
-            error: "Rating must be a number between 1 and 5.",
-          });
-      }
-      updatedData.ratings = ratingNumber;
-    }
-
-    // Find the food item to update
-    const food = await Food.findById(id);
-    if (!food) {
-      return res.status(404).json({ error: "Food not found", success: false });
-    }
-
-    // Handle category update
-    if (food.category !== category) {
-      const menu = await Menu.findById(category);
-      if (!menu) {
-        return res.status(404).json({ error: "Menu not found" });
-      }
-      // Add the food to the new menu's foods array
-      menu.foods.push(id); // Use food ID to add to the new menu
-
-      // Remove the food item from the old menu's foods array
-      await Menu.updateMany(
-        { foods: id }, // Find menus that contain the food item
-        { $pull: { foods: id } } // Remove the food item from the 'foods' array
-      );
-
-      await menu.save(); // Save the updated menu
-    }
-
-    // If there's a new image, handle Cloudinary upload
-    if (req.files && req.files.image) {
-      const imageFile = req.files.image;
-
-      // If the food already has an image, remove the old image from Cloudinary
-      if (food.image) {
-        const publicId = food.image.split("/").pop().split(".")[0]; // Get public ID from the image URL
-        await cloudinary.v2.uploader.destroy(`food_images/${publicId}`);
-      }
-
-      // Upload new image to Cloudinary
-      const result = await cloudinary.v2.uploader.upload(
-        imageFile.tempFilePath,
-        { folder: "food_images" }
-      );
-
-      // Update the image URL
-      updatedData.image = result.secure_url;
-    }
-
-    // Update the food item in the database
-    const updatedFood = await Food.findByIdAndUpdate(id, updatedData, {
-      new: true, // Return the updated document
-    });
-
-    res.status(200).json({
-      message: "Food updated successfully!",
-      food: updatedFood,
-      success: true,
-    });
+    res.json({ success: true, message: "Song removed successfully!" });
   } catch (error) {
-    console.error("Error updating food:", error);
-    res.status(500).json({ error: "Failed to update food", success: false });
-  }
-};
-
-router.post("/edit/:songId/update", authMiddleware, async (req, res) => {
-  try {
-    const { name, thumbnail, track } = req.body;
-    const { songId } = req.params;
-    if (!name || !thumbnail || !track) {
-      return res
-        .status(301)
-        .json({ err: "Insufficient details to create song." });
-    }
-    const songDetails = { name, thumbnail, track };
-    const createdSong = await Song.updateOne({ _id: songId }, songDetails);
-    return res.status(200).json(createdSong);
-  } catch (error) {
-    return res.status(301).json({ err: error });
-  }
-});
-router.get("/edit/:songId/delete", authMiddleware, async (req, res) => {
-  try {
-    const { songId } = req.params;
-    await Song.deleteOne({ _id: songId });
-    return res.status(200).json({ data: "Succssfully deleted" });
-  } catch (error) {
-    return res.status(301).json({ err: error });
+    console.error("Error removing song:", error);
+    res.status(500).json({ err: "Failed to remove song", success: false });
   }
 });
 

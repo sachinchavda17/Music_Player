@@ -6,26 +6,11 @@ import { getDataApi } from "../utils/serverHelpers";
 import LoggedInContainer from "../containers/LoggedInContainer";
 import { useAudio } from "../contexts/AudioContext";
 import { useAuth } from "../contexts/AuthContext";
+import { useSongApi } from "../contexts/SongApiContext";
 
 const EditPage = () => {
-  const [songData, setSongData] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const { currentSong } = useAudio();
-  const {cookies}  = useAuth()
-  const token = cookies?.authToken
-  useEffect(() => {
-    const getData = async () => {
-      try {
-        const response = await getDataApi("/song/get/mysongs", token);
-        setSongData(response.data);
-      } catch (error) {
-        toast.error("Error fetching data");
-      } finally {
-        setLoading(false);
-      }
-    };
-    getData();
-  }, []);
+
+  const {loading,mySongs} = useSongApi()
 
   return (
     <LoggedInContainer curActiveScreen="edit">
@@ -37,7 +22,7 @@ const EditPage = () => {
             Edit Your Songs
           </div>
           <div className="grid gap-2 grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-6 overflow-auto max-lg:grid-cols-3 max-md:grid-cols-2">
-            {songData.map((item) => (
+            {mySongs.map((item) => (
               <SingleSongBox item={item} edit={1} key={JSON.stringify(item)} />
             ))}
           </div>

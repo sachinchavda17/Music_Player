@@ -9,28 +9,7 @@ import { useAuth } from "../contexts/AuthContext";
 import { useAudio } from "../contexts/AudioContext";
 
 const Home = () => {
-  const [songData, setSongData] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const { isAuthenticated, token } = useAuth();
-  const { currentSong } = useAudio() || {}; // Use only required context values
-  useEffect(() => {
-    const getData = async () => {
-      try {
-        const response = await getDataApi("/song/get/allsong");
-        if (response?.data) {
-          setSongData(response.data);
-        } else {
-          toast.error("No songs available.");
-        }
-      } catch (error) {
-        toast.error("Error fetching data");
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    getData();
-  }, [token]);
+  const { songData, loading } = useAuth();
 
   return (
     <LoggedInContainer curActiveScreen="home">

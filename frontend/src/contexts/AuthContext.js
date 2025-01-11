@@ -1,6 +1,8 @@
 import React from "react";
 import { createContext, useContext, useEffect, useState } from "react";
 import { useCookies } from "react-cookie";
+import { toast } from "react-toastify";
+import { getDataApi } from "../utils/serverHelpers";
 
 const AuthContext = createContext();
 
@@ -8,9 +10,11 @@ export const useAuth = () => useContext(AuthContext);
 
 export const AuthContextProvider = ({ children }) => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [songData, setSongData] = useState([]);
   const [user, setUser] = useState({});
   const [cookies, setCookie, removeCookie] = useCookies(["authToken"]);
   const [token, setToken] = useState("");
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const authToken = cookies.authToken;
@@ -21,6 +25,26 @@ export const AuthContextProvider = ({ children }) => {
     } else {
       setIsAuthenticated(false);
     }
+  }, [token]);
+
+  useEffect(() => {
+    const getData = async () => {
+      setLoading(true);
+      try {
+        const response = await getDataApi("/song/get/allsong");
+        if (response?.data) {
+          setSongData(response.data);
+        } else {
+          toast.error("No songs available.");
+        }
+      } catch (error) {
+        toast.error("Error fetching data");
+      } finally {
+        setLoading(false); // Set loading to false once the fetching is complete
+      }
+    };
+
+    getData();
   }, [token]);
 
   const loginCookie = (token) => {
@@ -49,6 +73,8 @@ export const AuthContextProvider = ({ children }) => {
         user,
         setUser,
         token,
+        songData,
+        loading,
       }}
     >
       {children}

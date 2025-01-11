@@ -106,7 +106,8 @@ const UserProfile = () => {
         toast.success("Profile updated successfully");
         setFormData(formData); // Update user data
         setIsEditing(false);
-        localStorage.setItem("currentUser", JSON.stringify(response.formData));
+        localStorage.setItem("currentUser", JSON.stringify(response.user));
+        window.location.reload()
       } else {
         toast.error(response.error || "Failed to update profile.");
       }

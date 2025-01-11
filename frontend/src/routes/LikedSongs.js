@@ -6,55 +6,31 @@ import { toast } from "react-toastify";
 import Loading from "../components/Loading";
 import { useAudio } from "../contexts/AudioContext";
 import { useAuth } from "../contexts/AuthContext";
+import { useSongApi } from "../contexts/SongApiContext";
 
 const LikedSongs = () => {
-  const [songData, setSongData] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const { currentSong } = useAudio();
-  const { cookies } = useAuth();
-  const token = cookies?.authToken;
-
-  useEffect(() => {
-    const getData = async () => {
-      try {
-        console.log(token)
-        const response = await getDataApi("/song/likesongs", token);
-        if (response.data) {
-          setSongData(response.data);
-        } else {
-          toast.error(response.err);
-        }
-      } catch (error) {
-        toast.error("Error fetching data");
-      } finally {
-        setLoading(false);
-      }
-    };
-    getData();
-  }, [token]);
+  const { loading, likedSongs } = useSongApi(); // Corrected the name here
 
   return (
     <LoggedInContainer curActiveScreen="likedsong">
       {loading ? (
         <Loading />
       ) : (
-        <div className="">
-          <div
-            className={`  text-white text-2xl font-semibold pb-4 pl-2 sm:pt-5`}
-          >
+        <div>
+          <div className="text-white text-2xl font-semibold pb-4 pl-2 sm:pt-5">
             Your Liked Song
           </div>
-          {songData.length === 0 ? (
+          {likedSongs.length === 0 ? ( // Corrected the variable name here
             <div className="text-lightGray text-lg pl-2">
               You haven't liked any song till now.
             </div>
           ) : (
             <div className="space-y-3 overflow-auto">
-              {songData.map((item) => (
+              {likedSongs.map((item) => (
                 <SingleSongCard
                   info={item}
-                  songList={songData}
-                  key={JSON.stringify(item)}
+                  songList={likedSongs} // Passing the correct variable here
+                  key={item._id} // Use a unique identifier (e.g., `id`) as key
                 />
               ))}
             </div>

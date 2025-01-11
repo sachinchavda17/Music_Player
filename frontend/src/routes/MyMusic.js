@@ -6,27 +6,10 @@ import { toast } from "react-toastify";
 import Loading from "../components/Loading";
 import { useAudio } from "../contexts/AudioContext";
 import { useAuth } from "../contexts/AuthContext";
+import { useSongApi } from "../contexts/SongApiContext";
 
 const MyMusic = () => {
-  const [songData, setSongData] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const { currentSong } = useAudio();
-  const { cookies } = useAuth();
-  const token = cookies?.authToken
-
-  useEffect(() => {
-    const getData = async () => {
-      try {
-        const response = await getDataApi("/song/get/mysongs", token);
-        setSongData(response.data);
-      } catch (error) {
-        toast.error("Error fetching data");
-      } finally {
-        setLoading(false);
-      }
-    };
-    getData();
-  }, [token]);
+  const { mySongs, loading } = useSongApi();
 
   return (
     <LoggedInContainer curActiveScreen="myMusic">
@@ -39,16 +22,16 @@ const MyMusic = () => {
           >
             My Songs
           </div>
-          {songData.length === 0 ? (
+          {mySongs.length === 0 ? (
             <div className="text-lightGray text-lg pl-2">
               You haven't upload song.
             </div>
           ) : (
             <div className="space-y-3 overflow-auto">
-              {songData.map((item) => (
+              {mySongs.map((item) => (
                 <SingleSongCard
                   info={item}
-                  songList={songData}
+                  songList={mySongs}
                   key={JSON.stringify(item)}
                 />
               ))}

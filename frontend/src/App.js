@@ -15,6 +15,7 @@ import { ToastContainer } from "react-toastify";
 import { AudioProvider } from "./contexts/AudioContext";
 import { useAuth } from "./contexts/AuthContext";
 import Home from "./routes/Home";
+import { SongApiProvider } from "./contexts/SongApiContext";
 
 function App() {
   const { cookies, user } = useAuth();
@@ -24,25 +25,27 @@ function App() {
       <BrowserRouter>
         {cookies.authToken ? (
           // logged in routes
-          <AudioProvider>
-            <Routes>
-              <Route path="/" element={<Home />} />
-              <Route path="/search" element={<SearchPage />} />
-              <Route path="/profile" element={<Userprofile />} />
-              <Route path="/playedsong" element={<SongDetails />} />
-              <Route path="/likedsong" element={<LikedSongs />} />
-              {user?.isArtist && (
-                <>
-                  <Route path="/uploadSong" element={<UploadSong />} />
-                  <Route path="/myMusic" element={<MyMusic />} />
-                  <Route path="/edit" element={<EditPage />} />
-                  <Route path="/edit/:songId" element={<EditSongPage />} />
-                  <Route path="*" element={<Navigate to="/" />} />
-                </>
-              )}
-              <Route path="*" element={<Navigate to="/" />} />
-            </Routes>
-          </AudioProvider>
+          <SongApiProvider>
+            <AudioProvider>
+              <Routes>
+                <Route path="/" element={<Home />} />
+                <Route path="/search" element={<SearchPage />} />
+                <Route path="/profile" element={<Userprofile />} />
+                <Route path="/playedsong" element={<SongDetails />} />
+                <Route path="/likedsong" element={<LikedSongs />} />
+                {user?.isArtist && (
+                  <>
+                    <Route path="/uploadSong" element={<EditSongPage />} />
+                    <Route path="/myMusic" element={<MyMusic />} />
+                    <Route path="/edit" element={<EditPage />} />
+                    <Route path="/edit/:songId" element={<EditSongPage />} />
+                    <Route path="*" element={<Navigate to="/" />} />
+                  </>
+                )}
+                <Route path="*" element={<Navigate to="/" />} />
+              </Routes>
+            </AudioProvider>
+          </SongApiProvider>
         ) : (
           // logged out routes
           <Routes>
