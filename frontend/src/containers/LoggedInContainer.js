@@ -31,7 +31,7 @@ const LoggedInContainer = ({ children, curActiveScreen }) => {
         <div
           className={`${
             currentSong?._id ? " h-auto mb-24 " : ""
-          } p-8 h-full  rounded-lg  sm:ml-64  bg-app-black m-2 mt-20  overflow-auto `}
+          }px-1 py-2 md:p-8 h-full  rounded-lg  sm:ml-64  bg-app-black m-2 mt-20  overflow-auto `}
         >
           {children}
         </div>

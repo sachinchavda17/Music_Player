@@ -60,7 +60,6 @@ const MusicFooter = () => {
   const likeToggleFetch = async () => {
     try {
       const response = await getDataApi(`/song/like/${songId}`, token);
-      console.log(response);
       if (response.success) {
         setLiked(response.liked);
         toast.success(response.msg || "Liked status changed");
@@ -68,13 +67,13 @@ const MusicFooter = () => {
         toast.error(response.err || "sorry!! can't like your song");
       }
     } catch (err) {
-      console.error("Error toggling like:", err);
+      // console.error("Error toggling like:", err);
       setLiked("Error toggling like");
     }
   };
 
   useEffect(() => {
-    fetchLikedStatus();
+    if (token) fetchLikedStatus();
   }, [songId]);
 
   return (

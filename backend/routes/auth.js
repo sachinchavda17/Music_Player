@@ -14,7 +14,6 @@ router.post("/register", async (req, res) => {
       password,
       firstName,
       lastName,
-      username,
       profileBackground,
       profileText,
     } = req.body;
@@ -31,7 +30,6 @@ router.post("/register", async (req, res) => {
       password: password,
       firstName,
       lastName,
-      username,
       profileBackground,
       profileText,
     };
@@ -69,7 +67,6 @@ router.post("/login", async (req, res) => {
       email: user.email,
       profileBackground: user.profileBackground,
       profileText: user.profileText,
-      username: user.username,
       joinDate: user.joinDate,
       isArtist: user.isArtist,
       _id: user._id,
@@ -106,12 +103,11 @@ router.get("/profile", authMiddleware, async (req, res) => {
 // API to update user details
 router.put("/update", authMiddleware, async (req, res) => {
   try {
-    const { email, username, firstName, lastName, isArtist } = req.body;
+    const { email,  firstName, lastName, isArtist } = req.body;
 
     // Check for required fields
     if (
       !email &&
-      !username &&
       !firstName &&
       !lastName &&
       isArtist === undefined
@@ -129,7 +125,6 @@ router.put("/update", authMiddleware, async (req, res) => {
       userId,
       {
         ...(email && { email }),
-        ...(username && { username }),
         ...(firstName && { firstName }),
         ...(lastName && { lastName }),
         ...(isArtist !== undefined && { isArtist }),

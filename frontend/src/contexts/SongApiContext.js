@@ -34,7 +34,6 @@ export const SongApiProvider = ({ children }) => {
         // Fetch liked songs
         const likedSongsResponse = await getDataApi("/song/likesongs", token);
         setLikedSongs(likedSongsResponse.data);
-        console.log(likedSongsResponse)
       } catch (error) {
         toast.error("Error fetching data");
       } finally {

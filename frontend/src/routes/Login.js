@@ -57,7 +57,7 @@ const LoginComponent = () => {
             />
           </Link>
         </div>
-        <div className="inputRegion w-full px-5 sm:w-1/3 py-10 flex items-center justify-center flex-col text-lightGray-light">
+        <div className="inputRegion w-full px-5 sm:max-w-screen-sm py-10 flex items-center justify-center flex-col text-lightGray-light">
           <div className="font-bold mb-4 text-center">
             To continue, log in to BeatFlow.
           </div>
@@ -108,7 +108,7 @@ const LoginComponent = () => {
           </div>
 
           <Link to="/signup" className="w-full">
-            <div className="border border-lightGray hover:border-lightGray-light text-lightGray hover:text-lightGray-light w-full flex items-center justify-center py-4 rounded-full font-bold bg-transparent transition">
+            <div className="border border-lightGray hover:border-lightGray-light text-primary hover:text-primary-light w-full flex items-center justify-center py-4 rounded-full font-bold bg-transparent transition">
               SIGN UP FOR BEATFLOW
             </div>
           </Link>

@@ -4,7 +4,7 @@ import { Icon } from "@iconify/react";
 import TextInput from "../components/TextInput";
 import PasswordInput from "../components/PasswordInput";
 import { Link, useNavigate } from "react-router-dom";
-import {  postDataApi } from "../utils/serverHelpers";
+import { postDataApi } from "../utils/serverHelpers";
 import { useForm } from "react-hook-form";
 import profileColor from "../containers/profileColor";
 import { toast } from "react-toastify";
@@ -38,7 +38,6 @@ const SignupComponent = () => {
       const data = {
         email: signupdata.email,
         password: signupdata.password,
-        username: signupdata.username,
         firstName: signupdata.firstName,
         lastName: signupdata.lastName,
         profileBackground: colorsCombo.background,
@@ -51,7 +50,7 @@ const SignupComponent = () => {
         const token = response.token;
         const date = new Date();
         date.setDate(date.getDate() + 10 * 60 * 60 * 1000);
-        toast.success("Successfully Signup");
+        toast.success("Successfully Signed Up");
         setCookie("token", token, { path: "/", expires: date });
         localStorage.setItem(
           "currentUser",
@@ -61,7 +60,6 @@ const SignupComponent = () => {
             email: response.email,
             isArtist: response.isArtist,
             joinDate: response.joinDate,
-            username: response.username,
             _id: response._id,
           })
         );
@@ -88,7 +86,7 @@ const SignupComponent = () => {
           />
         </Link>
       </div>
-      <div className="inputRegion w-full px-5 sm:w-1/3 py-10 flex items-center justify-center flex-col">
+      <div className="inputRegion w-full px-5 sm:max-w-screen-sm py-10 flex items-center justify-center flex-col">
         <div className="font-bold mb-4 text-2xl text-center">
           Sign up for free to start listening.
         </div>
@@ -104,21 +102,9 @@ const SignupComponent = () => {
             className="my-3"
             registerName="email"
             pattern={"/^[w-.]+@([w-]+.)+[w-]{2,}$/gm"}
-            patternErr={
-              "Invalid email format"
-            }
+            patternErr={"Invalid email format"}
             register={register}
             error={errors?.email?.message}
-          />
-          <TextInput
-            label="Username"
-            placeholder="Enter your username"
-            className={"my-3"}
-            registerName="username"
-            register={register}
-            pattern={"^[a-zA-Z0-9_.-]+$"}
-            patternErr={"only underscore, alphanumber, dash allowed"}
-            error={errors?.username?.message}
           />
           <PasswordInput
             label="Create Password"
@@ -142,21 +128,27 @@ const SignupComponent = () => {
             error={errors?.confirmPassword?.message}
             className="my-3"
           />
-          <TextInput
-            label="First Name"
-            placeholder="Enter Your First Name"
-            className="my-3"
-            registerName="firstName"
-            register={register}
-            error={errors?.firstName?.message}
-          />
-          <TextInput
-            label="Last Name"
-            placeholder="Enter Your Last Name"
-            registerName="lastName"
-            register={register}
-            error={errors?.lastName?.message}
-          />
+          
+          {/* Name Fields Layout: stack vertically on small screens, side-by-side on larger screens */}
+          <div className="flex flex-col sm:flex-row items-center justify-between sm:gap-5 w-full">
+            <TextInput
+              label="First Name"
+              placeholder="Enter Your First Name"
+              className="my-3 sm:w-1/2"
+              registerName="firstName"
+              register={register}
+              error={errors?.firstName?.message}
+            />
+            <TextInput
+              label="Last Name"
+              placeholder="Enter Your Last Name"
+              className="my-3 sm:w-1/2"
+              registerName="lastName"
+              register={register}
+              error={errors?.lastName?.message}
+            />
+          </div>
+          
           <div className=" w-full flex items-center justify-center  transition-shadow  my-8">
             <button
               disabled={loading}
@@ -183,7 +175,7 @@ const SignupComponent = () => {
           Already have an account?
         </div>
         <Link to="/login" className="w-full">
-          <div className="border border-lightGray hover:border-lightGray-light text-lightGray hover:text-lightGray-light  w-full flex items-center justify-center py-4 rounded-full font-bold bg-transparent transition">
+          <div className="border border-lightGray hover:border-lightGray-light text-primary hover:text-primary-light  w-full flex items-center justify-center py-4 rounded-full font-bold bg-transparent transition">
             LOG IN INSTEAD
           </div>
         </Link>

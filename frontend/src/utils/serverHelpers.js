@@ -1,7 +1,7 @@
 import axios from "axios";
 const BASE_URL = process.env.REACT_APP_BACKEND_URL;
 
-// Generalized GET request
+// GET request
 export const getDataApi = async (endpoint, token) => {
   try {
     const response = await fetch(`${BASE_URL}${endpoint}`, {
@@ -25,7 +25,7 @@ export const getDataApi = async (endpoint, token) => {
   }
 };
 
-// Generalized POST request
+// POST request
 export const postDataApi = async (endpoint, data, token) => {
   try {
     const response = await fetch(`${BASE_URL}${endpoint}`, {
@@ -37,11 +37,8 @@ export const postDataApi = async (endpoint, data, token) => {
       body: JSON.stringify(data),
     });
 
-    const jsonResponse = await response.json(); // Always parse the response
-    console.log(response);
-    console.log(jsonResponse);
+    const jsonResponse = await response.json();
     if (!response.ok) {
-      // If the response is not ok, throw an error with the message from the server
       throw new Error(jsonResponse.error || "Failed to post data");
     }
     return jsonResponse;
@@ -51,7 +48,7 @@ export const postDataApi = async (endpoint, data, token) => {
   }
 };
 
-// Generalized PUT (Update) request
+// PUT (Update) request
 export const updateDataApi = async (endpoint, data, token) => {
   try {
     const response = await fetch(`${BASE_URL}${endpoint}`, {
@@ -74,7 +71,7 @@ export const updateDataApi = async (endpoint, data, token) => {
   }
 };
 
-// Generalized DELETE request
+// DELETE request
 export const deleteDataApi = async (endpoint, token) => {
   try {
     const response = await fetch(`${BASE_URL}${endpoint}`, {
@@ -96,6 +93,7 @@ export const deleteDataApi = async (endpoint, token) => {
   }
 };
 
+// POST and PUT request for file uploadation
 export const fileUploadHandler = async (endpoint, method, formData, token) => {
   try {
     const config = {
@@ -110,17 +108,14 @@ export const fileUploadHandler = async (endpoint, method, formData, token) => {
         ? await axios.post(`${BASE_URL}${endpoint}`, formData, config)
         : await axios.put(`${BASE_URL}${endpoint}`, formData, config);
     if (response.data.success) {
-      console.log(response.data);
-      return response.data; // Return success response
+      return response.data;
     } else {
       throw new Error(response.data.err || "An error occurred.");
     }
   } catch (error) {
-    // Handle specific error from server
     if (error.response && error.response.data) {
       throw new Error(error.response.data.err || "An error occurred.");
     }
-    // Generic error
     throw new Error("Failed to upload file. Please try again.");
   }
 };

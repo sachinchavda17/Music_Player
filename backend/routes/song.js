@@ -89,7 +89,6 @@ router.get("/likesongs", authMiddleware, async (req, res) => {
 router.post("/create-new", authMiddleware, async (req, res) => {
   try {
     const { userId, name, thumbnail, track } = req.body;
-    console.log(req.body);
 
     // Validate required fields
     if (!name) {

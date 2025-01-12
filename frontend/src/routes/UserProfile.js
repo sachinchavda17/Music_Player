@@ -12,7 +12,6 @@ const UserProfile = () => {
   const [formData, setFormData] = useState({
     firstName: "",
     lastName: "",
-    username: "",
     email: "",
     _id: "",
     joinDate: "",
@@ -26,12 +25,6 @@ const UserProfile = () => {
       label: "Name",
       name: "name",
       value: `${formData.firstName || ""} ${formData.lastName || ""}`,
-      border: true,
-    },
-    {
-      label: "Username",
-      name: "username",
-      value: formData.username || "",
       border: true,
     },
     {

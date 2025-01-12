@@ -46,8 +46,6 @@ export const AudioProvider = ({ children }) => {
 
     audioRef.current.play();
     setIsPlaying(true);
-    console.log(playlist[currentIndex]);
-    console.log(currentIndex);
   };
 
   const pause = () => {
@@ -57,12 +55,10 @@ export const AudioProvider = ({ children }) => {
 
   const nextTrack = () => {
     if (shuffle) {
-      console.log("suffle is on");
       const randomIndex = Math.floor(Math.random() * playlist.length);
       setCurrentIndex(randomIndex);
       play(playlist[randomIndex]);
     } else {
-      console.log("suffle is off");
       const nextIndex = (currentIndex + 1) % playlist.length;
       setCurrentIndex(nextIndex);
       play(playlist[nextIndex]);
@@ -79,9 +75,7 @@ export const AudioProvider = ({ children }) => {
 
   // Toggle shuffle mode
   const toggleShuffle = () => {
-    console.log("from " + shuffle);
     setShuffle((prev) => !prev);
-    console.log("to " + shuffle);
   };
 
   // Toggle play/pause
