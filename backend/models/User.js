@@ -34,10 +34,6 @@ const User = new mongoose.Schema({
       ref: "Song",
     },
   ],
-  subscribedArtists: {
-    type: String,
-    default: "",
-  },
   isArtist: {
     type: Boolean,
     default: false,

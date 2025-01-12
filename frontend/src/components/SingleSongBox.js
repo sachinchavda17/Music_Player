@@ -51,7 +51,7 @@ const SingleSongBox = ({ item, songList, edit }) => {
             {item?.name}
           </div>
           <div className="text-lightGray  text-xs sm:text-sm py-1">
-            {item?.artist?.firstName + " " + item?.artist?.lastName}
+            {item?.artistName}
           </div>
           {edit && (
             <Link to={`/edit/${songId}`}>

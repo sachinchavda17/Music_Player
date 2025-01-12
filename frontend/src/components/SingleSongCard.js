@@ -89,7 +89,7 @@ const SingleSongCard = ({ info, songList }) => {
           </div>
           <div>
             <span className="text-xs text-lightGray cursor-pointer hover:underline">
-              {info.artist.firstName + " " + info.artist.lastName}
+              {info.artistName}
             </span>
           </div>
         </div>

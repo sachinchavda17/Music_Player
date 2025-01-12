@@ -10,18 +10,22 @@ import { Icon } from "@iconify/react";
 import LoggedInContainer from "../containers/LoggedInContainer";
 import { toast } from "react-toastify";
 import { useAuth } from "../contexts/AuthContext";
+import { useSongApi } from "../contexts/SongApiContext";
 
 const SongFormPage = () => {
   const [name, setName] = useState("");
+  const [artistName, setArtistName] = useState("");
   const [trackFile, setTrackFile] = useState(null);
   const [thumbnailFile, setThumbnailFile] = useState(null);
   const [trackURL, setTrackURL] = useState("");
   const [thumbnailURL, setThumbnailURL] = useState("");
   const [loading, setLoading] = useState(false);
-  const [buttonLoading, setButtonLoading] = useState(false);
+  const [submitButtonLoading, setSubmitButtonLoading] = useState(false);
+  const [deleteButtonLoading, setDeleteButtonLoading] = useState(false);
 
   const { songId } = useParams();
-  const { cookies } = useAuth();
+  const { cookies, setRefreshMain } = useAuth();
+  const { setRefresh } = useSongApi();
   const token = cookies?.authToken;
   const navigate = useNavigate();
 
@@ -33,6 +37,7 @@ const SongFormPage = () => {
           const response = await getDataApi(`/song/${songId}`, token);
           if (response.success) {
             setName(response.song.name);
+            setArtistName(response.song.artistName);
             setThumbnailURL(response.song.thumbnail);
             setTrackURL(response.song.track);
           }
@@ -45,23 +50,24 @@ const SongFormPage = () => {
       fetchSongData();
     } else {
       setName("");
-      setThumbnailURL(null);
-      setTrackURL(null);
+      setArtistName("");
       setTrackURL("");
       setThumbnailURL("");
     }
   }, [songId]);
 
   const handleSubmit = async () => {
-    if (!name) {
-      toast.error("Please provide a song name");
+    if (!name || !artistName) {
+      toast.error("Please provide a song name and artist name");
       return;
     }
 
     try {
-      setButtonLoading(true);
+      setSubmitButtonLoading(true);
       const formData = new FormData();
       formData.append("name", name);
+      formData.append("artistName", artistName);
+
       if (trackFile instanceof File) formData.append("track", trackFile);
       else if (trackURL) formData.append("track", trackURL);
 
@@ -75,17 +81,19 @@ const SongFormPage = () => {
       const response = await fileUploadHandler(url, method, formData, token);
 
       toast.success(response.message || "Operation successful");
-      setTimeout(() => navigate("/"), 1000);
+      setRefresh(true);
+      setRefreshMain(true);
+      setTimeout(() => navigate("/edit"), 1000);
     } catch (error) {
       toast.error(error.message || "Something went wrong");
     } finally {
-      setButtonLoading(false);
+      setSubmitButtonLoading(false);
     }
   };
 
   const handleDelete = async () => {
     try {
-      setButtonLoading(true);
+      setDeleteButtonLoading(true);
       const response = await deleteDataApi(
         `/song/edit/${songId}/delete`,
         token
@@ -99,7 +107,7 @@ const SongFormPage = () => {
     } catch {
       toast.error("Could not delete song");
     } finally {
-      setButtonLoading(false);
+      setDeleteButtonLoading(false);
     }
   };
 
@@ -124,6 +132,16 @@ const SongFormPage = () => {
                     placeholder="Enter song name"
                     value={name}
                     onChange={(e) => setName(e.target.value)}
+                  />
+                </div>
+                <div className="mb-6">
+                  <label className="text-lightGray-light">Artist Name</label>
+                  <input
+                    className="mt-2 px-4 py-3 bg-darkGray rounded focus:outline-none border-none w-full"
+                    type="text"
+                    placeholder="Enter song name"
+                    value={artistName}
+                    onChange={(e) => setArtistName(e.target.value)}
                   />
                 </div>
                 <div className="mb-6">
@@ -205,11 +223,11 @@ const SongFormPage = () => {
             </div>
             <div className="flex justify-around mt-8">
               <button
-                disabled={buttonLoading}
+                disabled={submitButtonLoading}
                 onClick={handleSubmit}
                 className="btn bg-blue-500 hover:bg-blue-600 text-white px-8 py-3 rounded transition-all"
               >
-                {buttonLoading ? (
+                {submitButtonLoading ? (
                   <Icon
                     icon="line-md:loading-alt-loop"
                     color="#eee"
@@ -224,11 +242,11 @@ const SongFormPage = () => {
               </button>
               {songId && (
                 <button
-                  disabled={buttonLoading}
+                  disabled={deleteButtonLoading}
                   onClick={handleDelete}
                   className="btn bg-red-500 hover:bg-red-600 text-white px-8 py-3 rounded transition-all"
                 >
-                  {buttonLoading ? (
+                  {deleteButtonLoading ? (
                     <Icon
                       icon="line-md:loading-alt-loop"
                       color="#eee"

@@ -15,7 +15,7 @@ export const AuthContextProvider = ({ children }) => {
   const [cookies, setCookie, removeCookie] = useCookies(["authToken"]);
   const [token, setToken] = useState("");
   const [loading, setLoading] = useState(true);
-
+  const [refreshMain, setRefreshMain] = useState(false);
   useEffect(() => {
     const authToken = cookies.authToken;
     if (authToken) {
@@ -45,7 +45,7 @@ export const AuthContextProvider = ({ children }) => {
     };
 
     getData();
-  }, [token]);
+  }, [token, refreshMain]);
 
   const loginCookie = (token) => {
     // Set a persistent cookie with an expiration
@@ -75,6 +75,7 @@ export const AuthContextProvider = ({ children }) => {
         token,
         songData,
         loading,
+        setRefreshMain,
       }}
     >
       {children}

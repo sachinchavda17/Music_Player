@@ -116,9 +116,7 @@ const MusicFooter = () => {
               {currentSong?.name || "No Track"}
             </p>
             <p className="text-sm hidden sm:block">
-              {currentSong?.artist?.firstName +
-                " " +
-                currentSong?.artist?.lastName || "Unknown Artist"}
+              {currentSong?.artistName  || "Unknown Artist"}
             </p>
           </div>
         </Link>

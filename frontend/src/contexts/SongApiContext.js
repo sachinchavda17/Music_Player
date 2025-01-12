@@ -13,19 +13,19 @@ export const SongApiProvider = ({ children }) => {
   const [cookies, setCookie, removeCookie] = useCookies(["authToken"]);
   const [token, setToken] = useState("");
   const [loading, setLoading] = useState(true);
+  const [refresh, setRefresh] = useState(false);
 
   useEffect(() => {
     const authToken = cookies.authToken;
     if (authToken) {
       setToken(authToken);
     }
-  }, [cookies.authToken]); // Set token only when authToken changes, no need to depend on 'token' itself
+  }, [cookies.authToken]);
 
   useEffect(() => {
-    if (!token) return; // Don't run if there's no token yet
-
+    if (!token) return;
     const fetchData = async () => {
-      setLoading(true); // Start loading
+      setLoading(true);
       try {
         // Fetch my songs
         const mySongsResponse = await getDataApi("/song/get/mysongs", token);
@@ -42,7 +42,7 @@ export const SongApiProvider = ({ children }) => {
     };
 
     fetchData();
-  }, [token]); // Runs when the token changes
+  }, [token, refresh]); // Runs when the token changes
 
   return (
     <SongApiContext.Provider
@@ -50,6 +50,7 @@ export const SongApiProvider = ({ children }) => {
         mySongs,
         likedSongs,
         loading,
+        setRefresh,
       }}
     >
       {children}
