@@ -31,8 +31,7 @@ export default function SongDetails() {
                   {currentSong?.name}
                 </h1>
                 <p className="text-sm text-lightGray text-center lg:text-left">
-                  {currentSong?.artist?.firstName}{" "}
-                  {currentSong?.artist?.lastName}
+                  {currentSong?.artistName}
                 </p>
               </div>
               <AudioPlayerControls player={true} />

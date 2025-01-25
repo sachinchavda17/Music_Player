@@ -9,9 +9,11 @@ import { useForm } from "react-hook-form";
 import profileColor from "../containers/profileColor";
 import { toast } from "react-toastify";
 import logo from "../images/logo4.png";
+import { useAuth } from "../contexts/AuthContext";
 
 const SignupComponent = () => {
   const [cookie, setCookie] = useCookies(["token"]);
+  const { loginCookie, setUser } = useAuth();
   const [loading, setLoading] = useState(null);
   const navigate = useNavigate();
   const {
@@ -29,15 +31,12 @@ const SignupComponent = () => {
   const signUp = async (signupdata) => {
     try {
       setLoading(true);
-      if (signupdata.password !== signupdata.confirmPassword) {
-        toast.error("Password does not match. Please check again");
-        return; // Return early if passwords do not match
-      }
       const colorsCombo = getRandomColor();
-
+      console.log(signupdata);
       const data = {
         email: signupdata.email,
         password: signupdata.password,
+        confirmPassword: signupdata.confirmPassword,
         firstName: signupdata.firstName,
         lastName: signupdata.lastName,
         profileBackground: colorsCombo.background,
@@ -45,30 +44,19 @@ const SignupComponent = () => {
       };
 
       const response = await postDataApi("/auth/register", data);
-
-      if (response && !response.err) {
-        const token = response.token;
-        const date = new Date();
-        date.setDate(date.getDate() + 10 * 60 * 60 * 1000);
-        toast.success("Successfully Signed Up");
-        setCookie("token", token, { path: "/", expires: date });
-        localStorage.setItem(
-          "currentUser",
-          JSON.stringify({
-            firstName: response.firstName,
-            lastName: response.lastName,
-            email: response.email,
-            isArtist: response.isArtist,
-            joinDate: response.joinDate,
-            _id: response._id,
-          })
-        );
-        navigate("/");
-      } else {
-        toast.error(response.err);
+      console.log(response);
+      if (!response.success) {
+        return toast.error(response.error || "Failed to signup");
       }
+
+      toast.success("Successfully Signup");
+      setUser(response.user);
+      loginCookie(response.token);
+      localStorage.setItem("currentUser", JSON.stringify(response.user));
+      navigate("/");
+
     } catch (err) {
-      toast.error(err);
+      toast.error(err || "Failed to signup");
     } finally {
       setLoading(false);
     }
@@ -128,7 +116,7 @@ const SignupComponent = () => {
             error={errors?.confirmPassword?.message}
             className="my-3"
           />
-          
+
           {/* Name Fields Layout: stack vertically on small screens, side-by-side on larger screens */}
           <div className="flex flex-col sm:flex-row items-center justify-between sm:gap-5 w-full">
             <TextInput
@@ -148,7 +136,7 @@ const SignupComponent = () => {
               error={errors?.lastName?.message}
             />
           </div>
-          
+
           <div className=" w-full flex items-center justify-center  transition-shadow  my-8">
             <button
               disabled={loading}

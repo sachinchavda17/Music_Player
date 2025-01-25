@@ -1,17 +1,23 @@
 const User = require("../models/User");
 const jwt = require("jsonwebtoken");
+const bcrypt = require("bcrypt");
 
 const registerController = async (req, res) => {
   try {
+    console.log("api called");
     const {
       email,
       password,
+      confirmPassword,
       firstName,
       lastName,
       profileBackground,
       profileText,
     } = req.body;
 
+    if (!email || !firstName || !password || !confirmPassword) {
+      return res.json({ success: false, error: "All fields are mandadory" });
+    }
     // user Exists or not
     const user = await User.findOne({ email: email });
     if (user) {
@@ -19,9 +25,17 @@ const registerController = async (req, res) => {
         .status(403)
         .json({ err: "A user with this email already exists", success: false });
     }
+    if (password !== confirmPassword) {
+      return res.status(400).json({ error: "Passwords do not match!" });
+    }
+    console.log("salting start");
+    const salt = await bcrypt.genSalt(10);
+    const hashedPassword = await bcrypt.hash(password, salt);
+    console.log("salting ended");
+
     const newUserData = {
       email,
-      password: password,
+      password: hashedPassword,
       firstName,
       lastName,
       profileBackground,
@@ -33,14 +47,13 @@ const registerController = async (req, res) => {
 
     // const userToReturn = { ...newUser.toJSON(), token };
     delete newUser.password;
-    return res.status(200).json({ newUser, token, success: true });
-  } catch (error) {
-    return res.status(400).json({ err: error, success: false });
+    return res.status(200).json({ user: newUser, token, success: true });
+  } catch (err) {
+    return res.status(400).json({ error: err, success: false });
   }
 };
 
 const loginController = async (req, res) => {
-  // check email exists or not
   try {
     const { email, password } = req.body;
     const user = await User.findOne({ email: email });
@@ -48,20 +61,19 @@ const loginController = async (req, res) => {
       return res.status(403).json({ err: "User not found with this email." });
     }
 
-    const userPassword = user.password;
-    if (password !== userPassword) {
-      return res.status(403).json({ err: "invalid Credentials" });
+    
+    const isMatch = await bcrypt.compare(password, user.password);
+
+    if (!isMatch) {
+      return res
+        .status(404)
+        .json({ err: "invalid Credentials", success: false });
     }
 
     const token = await createToken(user._id);
-    // const userToReturn = { ...user.toJSON(), token };
+    
     const returnUser = {
       firstName: user.firstName,
-      lastName: user.lastName,
-      email: user.email,
-      profileBackground: user.profileBackground,
-      profileText: user.profileText,
-      joinDate: user.joinDate,
       isArtist: user.isArtist,
       _id: user._id,
     };
