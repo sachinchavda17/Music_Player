@@ -20,6 +20,7 @@ export const AudioProvider = ({ children }) => {
   const [progress, setProgress] = useState(0);
   const [duration, setDuration] = useState(0);
   const [shuffle, setShuffle] = useState(false);
+  const [isMuted, setIsMuted] = useState(false);
 
   const audioRef = useRef(new Audio());
   // const currentSong = playlist[currentIndex] || {};
@@ -89,6 +90,21 @@ export const AudioProvider = ({ children }) => {
     }
   };
 
+  const handleVolumeChange = (e) => {
+    setAudioVolume(parseFloat(e.target.value));
+    setIsMuted(false);
+  };
+
+  const handleToggleMute = () => {
+    if (isMuted) {
+      setAudioVolume(0.5); // Set to a specific volume when unmuting
+      setIsMuted(false);
+    } else {
+      setAudioVolume(0); // Mute the audio
+      setIsMuted(true);
+    }
+  };
+
   // Set volume
   const setAudioVolume = (newVolume) => {
     const clampedVolume = Math.min(1, Math.max(0, newVolume)); // Ensure volume stays between 0 and 1
@@ -155,7 +171,9 @@ export const AudioProvider = ({ children }) => {
         togglePlayPause,
         setAudioVolume,
         seekTo,
-        stopMusicLogout
+        stopMusicLogout,
+        handleToggleMute,
+        handleVolumeChange,
       }}
     >
       {children}

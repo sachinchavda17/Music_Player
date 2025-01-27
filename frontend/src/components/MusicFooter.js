@@ -17,30 +17,17 @@ const MusicFooter = () => {
     setAudioVolume,
     shuffle,
     toggleShuffle,
+    handleToggleMute,
+    handleVolumeChange,
   } = useAudio();
 
   const [isPopoverVisible, setIsPopoverVisible] = useState(false);
   const [isLikedPopover, setIsLikedPopover] = useState(false);
   const [liked, setLiked] = useState(false);
-  const [isMuted, setIsMuted] = useState(false);
+
   const { cookies } = useAuth();
   const token = cookies?.authToken;
   const songId = currentSong?._id;
-
-  const handleVolumeChange = (e) => {
-    setAudioVolume(parseFloat(e.target.value));
-    setIsMuted(false);
-  };
-
-  const handleToggleMute = () => {
-    if (isMuted) {
-      setAudioVolume(0.5); // Set to a specific volume when unmuting
-      setIsMuted(false);
-    } else {
-      setAudioVolume(0); // Mute the audio
-      setIsMuted(true);
-    }
-  };
 
   const fetchLikedStatus = async () => {
     try {
@@ -116,7 +103,7 @@ const MusicFooter = () => {
               {currentSong?.name || "No Track"}
             </p>
             <p className="text-sm hidden sm:block">
-              {currentSong?.artistName  || "Unknown Artist"}
+              {currentSong?.artistName || "Unknown Artist"}
             </p>
           </div>
         </Link>

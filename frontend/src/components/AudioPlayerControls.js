@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { Icon } from "@iconify/react";
 import { useAudio } from "../contexts/AudioContext";
 import { secondsToHms } from "../containers/functionContainer.js";
@@ -12,12 +12,20 @@ const AudioPlayerControls = ({ player = false }) => {
     duration,
     nextTrack,
     prevTrack,
+    toggleShuffle,
+    shuffle,
+    volume,
+    handleToggleMute,
+    handleVolumeChange,
   } = useAudio();
 
+  const [showVolumePanel, setShowVolumePanel] = useState(false);
   const handleSeekChange = (value) => {
     const newTime = (value / 100) * duration;
     seekTo(newTime);
   };
+
+  const [isPopoverVisible, setIsPopoverVisible] = useState(false);
 
   return (
     <div
@@ -27,51 +35,106 @@ const AudioPlayerControls = ({ player = false }) => {
     >
       {/* Control Buttons */}
       <div
-        className={`flex items-center ${player ? "gap-4" : "sm:space-x-4"}`}
+        className={`flex items-center ${
+          player ? "justify-between w-full " : "justify-center"
+        }`}
       >
-        {/* Previous Track */}
-        <button onClick={prevTrack} className="">
+        {player && (
           <Icon
-            icon="bi:skip-backward"
+            icon="mdi:shuffle-variant"
+            onClick={() => toggleShuffle()}
             fontSize={25}
-            className={`cursor-pointer text-lightGray hover:text-white ${
-              player || "hidden sm:block"
+            className={`cursor-pointer ${
+              shuffle ? "text-primary" : "text-lightGray hover:text-white"
             }`}
           />
-        </button>
+        )}
+        <div
+          className={`flex items-center ${player ? "gap-4" : "sm:space-x-4"}`}
+        >
+          {/* Previous Track */}
+          <button onClick={prevTrack} className="">
+            <Icon
+              icon="bi:skip-backward"
+              fontSize={25}
+              className={`cursor-pointer text-lightGray hover:text-white ${
+                player || "hidden sm:block"
+              }`}
+            />
+          </button>
 
-        {/* Play/Pause Button */}
-        <button onClick={togglePlayPause} className="text-3xl">
-          {/* Desktop */}
-          <Icon
-            icon={
-              isPlaying ? "ic:baseline-pause-circle" : "ic:baseline-play-circle"
-            }
-            fontSize={50}
-            className={`cursor-pointer text-white ${
-              player || "hidden sm:block"
-            }`}
-          />
-          {/* Mobile */}
-          <Icon
-            icon={isPlaying ? "solar:pause-bold" : "solar:play-bold"}
-            fontSize={25}
-            className={`cursor-pointer text-white ${
-              player ? "hidden" : "sm:hidden"
-            }`}
-          />
-        </button>
+          {/* Play/Pause Button */}
+          <button onClick={togglePlayPause} className="text-3xl">
+            {/* Desktop */}
+            <Icon
+              icon={
+                isPlaying
+                  ? "ic:baseline-pause-circle"
+                  : "ic:baseline-play-circle"
+              }
+              fontSize={50}
+              className={`cursor-pointer text-white ${
+                player || "hidden sm:block"
+              }`}
+            />
+            {/* Mobile */}
+            <Icon
+              icon={isPlaying ? "solar:pause-bold" : "solar:play-bold"}
+              fontSize={25}
+              className={`cursor-pointer text-white ${
+                player ? "hidden" : "sm:hidden"
+              }`}
+            />
+          </button>
 
-        {/* Next Track */}
-        <button onClick={nextTrack}>
-          <Icon
-            icon="bi:skip-forward"
-            fontSize={25}
-            className={`cursor-pointer text-lightGray hover:text-white ${
-              player || "hidden sm:block"
-            }`}
-          />
-        </button>
+          {/* Next Track */}
+          <button onClick={nextTrack}>
+            <Icon
+              icon="bi:skip-forward"
+              fontSize={25}
+              className={`cursor-pointer text-lightGray hover:text-white ${
+                player || "hidden sm:block"
+              }`}
+            />
+          </button>
+        </div>
+        {player && (
+          <div className="relative flex items-center justify-center">
+            <button onClick={() => setShowVolumePanel(!showVolumePanel)}>
+              <Icon
+                icon={volume === 0 ? "bi:volume-mute" : "bi:volume-up"}
+                fontSize={25}
+                className={`cursor-pointer ${
+                  volume === 0
+                    ? "text-lightGray"
+                    : volume < 0.5
+                    ? "text-lightGray"
+                    : "text-lightGray-light"
+                } hover:text-gray-100`}
+              />
+            </button>
+
+            {showVolumePanel && (
+              <input
+                style={{
+                  background: `linear-gradient(to right, #e42012 ${
+                    volume * 100
+                  }%, lightgray ${volume}%)`,
+                  transform: "rotate(-90deg)",
+                  width: "120px",
+                  height: "8px",
+                }}
+                className="appearance-none absolute -top-16 h-2 rounded bg-lightGray "
+                type="range"
+                value={volume}
+                onChange={handleVolumeChange}
+                min="0"
+                max="1"
+                step="0.1"
+              />
+            )}
+          </div>
+        )}
       </div>
 
       {/* Progress Bar */}
