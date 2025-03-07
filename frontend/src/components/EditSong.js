@@ -11,6 +11,7 @@ import LoggedInContainer from "../containers/LoggedInContainer";
 import { toast } from "react-toastify";
 import { useAuth } from "../contexts/AuthContext";
 import { useSongApi } from "../contexts/SongApiContext";
+import UploadSongNonArtist from "../routes/UploadSongNonArtist";
 
 const SongFormPage = () => {
   const [name, setName] = useState("");
@@ -24,7 +25,7 @@ const SongFormPage = () => {
   const [deleteButtonLoading, setDeleteButtonLoading] = useState(false);
 
   const { songId } = useParams();
-  const { cookies, setRefreshMain } = useAuth();
+  const { cookies, setRefreshMain,user } = useAuth();
   const { setRefresh } = useSongApi();
   const token = cookies?.authToken;
   const navigate = useNavigate();
@@ -115,6 +116,8 @@ const SongFormPage = () => {
     <LoggedInContainer curActiveScreen={songId ? "edit" : "create"}>
       {loading ? (
         <Loading />
+      ) : !user.isArtist ? (
+        <UploadSongNonArtist />
       ) : (
         <div className="flex flex-col items-center bg-gradient-to-br  min-h-screen ">
           <div className="form bg-app-black text-white p-6 lg:px-12 rounded-lg shadow-lg w-full ">

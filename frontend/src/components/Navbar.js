@@ -107,7 +107,7 @@ const Navbar = ({ toggleSidebar }) => {
                       >
                         Profile
                       </Link>
-                      {isAuthenticated && user?.isArtist && (
+                      {isAuthenticated && (
                         <Link
                           to={"/uploadSong"}
                           className={

@@ -2,10 +2,8 @@ import "./App.css";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import LoginComponent from "./routes/Login";
 import SignupComponent from "./routes/Signup";
-import UploadSong from "./routes/UploadSong";
 import MyMusic from "./routes/MyMusic";
 import SearchPage from "./routes/SearchPage";
-import MusicFooter from "./components/MusicFooter";
 import SongDetails from "./routes/SongDetails";
 import Userprofile from "./routes/UserProfile";
 import EditPage from "./routes/EditPage";
@@ -33,9 +31,9 @@ function App() {
                 <Route path="/profile" element={<Userprofile />} />
                 <Route path="/playedsong" element={<SongDetails />} />
                 <Route path="/likedsong" element={<LikedSongs />} />
+                <Route path="/uploadSong" element={<EditSongPage />} />
                 {user?.isArtist && (
                   <>
-                    <Route path="/uploadSong" element={<EditSongPage />} />
                     <Route path="/myMusic" element={<MyMusic />} />
                     <Route path="/edit" element={<EditPage />} />
                     <Route path="/edit/:songId" element={<EditSongPage />} />
