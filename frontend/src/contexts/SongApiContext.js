@@ -27,22 +27,27 @@ export const SongApiProvider = ({ children }) => {
     const fetchData = async () => {
       setLoading(true);
       try {
-        // Fetch my songs
         const mySongsResponse = await getDataApi("/song/get/mysongs", token);
         setMySongs(mySongsResponse.data);
 
-        // Fetch liked songs
         const likedSongsResponse = await getDataApi("/song/likesongs", token);
-        setLikedSongs(likedSongsResponse.data);
+        console.log(likedSongsResponse)
+        if(likedSongsResponse.success){
+          setLikedSongs(likedSongsResponse.data);
+        }else{
+          toast.error(likedSongsResponse.err)
+          setLikedSongs([])
+        }
+        console.log(likedSongsResponse)
       } catch (error) {
         toast.error("Error fetching data");
       } finally {
-        setLoading(false); // Stop loading after both requests are done
+        setLoading(false); 
       }
     };
 
     fetchData();
-  }, [token, refresh]); // Runs when the token changes
+  }, [token, refresh]); 
 
   return (
     <SongApiContext.Provider

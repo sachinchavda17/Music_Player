@@ -8,6 +8,7 @@ import { useForm } from "react-hook-form";
 import { toast } from "react-toastify";
 import logo from "../images/logo4.png";
 import { useAuth } from "../contexts/AuthContext";
+import TestUserCredentials from "../components/TestUserCredentials";
 
 const LoginComponent = () => {
   const { loginCookie, setUser } = useAuth();
@@ -17,7 +18,7 @@ const LoginComponent = () => {
     register,
     handleSubmit,
     formState: { errors },
-    setValue, // Added to set field values
+    setValue,
   } = useForm();
 
   const login = async (loginData) => {
@@ -42,29 +43,6 @@ const LoginComponent = () => {
     } finally {
       setLoading(false);
     }
-  };
-
-  // Function to copy credentials and auto-fill form fields
-  const handleCopyCredentials = () => {
-    const credentials = {
-      email: "test@gmail.com", 
-      password: "1234567890",
-    };
-
-    // Copy the credentials to the clipboard
-    navigator.clipboard
-      .writeText(`${credentials.email}\n${credentials.password}`)
-      .then(() => {
-        // Auto-fill the form fields with copied credentials
-        setValue("email", credentials.email);
-        setValue("password", credentials.password);
-
-        // Show a success toast notification
-        toast.success("Credentials copied and fields auto-filled!");
-      })
-      .catch((err) => {
-        toast.error("Failed to copy credentials");
-      });
   };
 
   return (
@@ -126,26 +104,7 @@ const LoginComponent = () => {
             </div>
           </form>
 
-          {/* Copy Credentials Button */}
-          <div className="w-full text-center my-4">
-            {/* Test User Info */}
-            <div className="bg-gray-800 text-white p-4 rounded-md mb-4 w-full text-center">
-              <div className="font-semibold">Test User Info</div>
-              <div>
-                Email:{" "}
-                <span className="text-primary">test@gmail.com</span>
-              </div>
-              <div>
-                Password: <span className="text-primary">1234567890</span>
-              </div>
-            <button
-              onClick={handleCopyCredentials}
-              className="text-primary my-2 hover:text-primary-light font-semibold py-2 px-4 border rounded-full border-lightGray-light hover:border-lightGray"
-              >
-              Use These Credentials
-            </button>
-              </div>
-          </div>
+          <TestUserCredentials setValue={setValue} />
 
           <div className="w-full border border-solid border-lightGray-light"></div>
           <div className="my-4 font-semibold text-md">
@@ -153,7 +112,7 @@ const LoginComponent = () => {
           </div>
 
           <Link to="/signup" className="w-full">
-            <div className="border border-lightGray hover:border-lightGray-light text-primary hover:text-primary-light w-full flex items-center justify-center py-4 rounded-full font-bold bg-transparent transition">
+            <div className="border border-lightGray-light hover:border-lightGray text-primary hover:text-primary-light w-full flex items-center justify-center py-4 rounded-full font-bold bg-transparent transition">
               SIGN UP FOR BEATFLOW
             </div>
           </Link>

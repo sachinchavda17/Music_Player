@@ -12,6 +12,7 @@ import { toast } from "react-toastify";
 import { useAuth } from "../contexts/AuthContext";
 import { useSongApi } from "../contexts/SongApiContext";
 import UploadSongNonArtist from "../routes/UploadSongNonArtist";
+import InputText from "./InputText";
 
 const SongFormPage = () => {
   const [name, setName] = useState("");
@@ -25,7 +26,7 @@ const SongFormPage = () => {
   const [deleteButtonLoading, setDeleteButtonLoading] = useState(false);
 
   const { songId } = useParams();
-  const { cookies, setRefreshMain,user } = useAuth();
+  const { cookies, setRefreshMain, user } = useAuth();
   const { setRefresh } = useSongApi();
   const token = cookies?.authToken;
   const navigate = useNavigate();
@@ -127,26 +128,18 @@ const SongFormPage = () => {
             <div className="flex flex-col lg:flex-row gap-6 ">
               {/* Form Section */}
               <div className="order-2 lg:order-1 flex-1">
-                <div className="mb-6">
-                  <label className="text-lightGray-light">Song Name</label>
-                  <input
-                    className="mt-2 px-4 py-3 bg-darkGray rounded focus:outline-none border-none w-full"
-                    type="text"
-                    placeholder="Enter song name"
-                    value={name}
-                    onChange={(e) => setName(e.target.value)}
-                  />
-                </div>
-                <div className="mb-6">
-                  <label className="text-lightGray-light">Artist Name</label>
-                  <input
-                    className="mt-2 px-4 py-3 bg-darkGray rounded focus:outline-none border-none w-full"
-                    type="text"
-                    placeholder="Enter song name"
-                    value={artistName}
-                    onChange={(e) => setArtistName(e.target.value)}
-                  />
-                </div>
+                <InputText
+                  placeholder={"Enter song name"}
+                  label={"Song Name"}
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                />
+                <InputText
+                  placeholder={"Enter artist name"}
+                  label={"Artist Name"}
+                  value={artistName}
+                  onChange={(e) => setArtistName(e.target.value)}
+                />
                 <div className="mb-6">
                   <label className="text-lightGray-light">Thumbnail</label>
                   <div className="flex flex-col">

@@ -47,7 +47,7 @@ const likedSongsController = async (req, res) => {
     const user = await User.findById(userId);
 
     if (!user) {
-      return res.status(404).json({ error: "User not found" });
+      return res.status(404).json({ err: "User not found", success: false });
     }
 
     const likedSongs = user.likedSongs;
@@ -55,7 +55,7 @@ const likedSongsController = async (req, res) => {
     if (!likedSongs || likedSongs.length === 0) {
       return res
         .status(200)
-        .json({ err: "You haven't liked any song till now" });
+        .json({ err: "You haven't liked any song till now", success: false });
     }
 
     // Fetch all liked songs and populate artist details in one query
@@ -63,10 +63,12 @@ const likedSongsController = async (req, res) => {
       _id: { $in: likedSongs },
     }).populate("artist");
 
-    return res.status(200).json({ data: likedSongData });
+    return res.status(200).json({ data: likedSongData, success: true });
   } catch (err) {
     console.error(err);
-    return res.status(500).json({ err: "Internal Server Error" });
+    return res
+      .status(500)
+      .json({ err: "Internal Server Error", success: false });
   }
 };
 

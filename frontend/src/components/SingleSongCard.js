@@ -7,6 +7,7 @@ import { useNavigate } from "react-router-dom";
 import spectrum from "../images/spectrum.gif";
 import spectrumPng from "../images/spectrum.png";
 import { toast } from "react-toastify";
+import { useSongApi } from "../contexts/SongApiContext";
 
 const SingleSongCard = ({ info, songList }) => {
   const [liked, setLiked] = useState(false);
@@ -15,6 +16,8 @@ const SingleSongCard = ({ info, songList }) => {
   const token = cookies?.authToken;
   const songId = info?._id;
   const { play, setPlaylist, isPlaying, currentSong } = useAudio() || {};
+  const { setRefresh } = useSongApi() || {};
+
   const navigate = useNavigate();
 
   const fetchLikedStatus = async () => {
@@ -40,6 +43,7 @@ const SingleSongCard = ({ info, songList }) => {
       const response = await getDataApi(`/song/like/${songId}`, token);
       if (response.success) {
         setLiked(response.liked);
+        setRefresh((prev) => !prev);
         toast.success(response.msg || "Liked status changed");
       } else {
         toast.error(response.err || "sorry!! can't like your song");
