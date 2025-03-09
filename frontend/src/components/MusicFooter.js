@@ -8,6 +8,7 @@ import AudioPlayerControls from "./AudioPlayerControls.js";
 import spectrum from "../images/spectrum.gif";
 import spectrumPng from "../images/spectrum.png";
 import { toast } from "react-toastify";
+import { useSongApi } from "../contexts/SongApiContext.js";
 
 const MusicFooter = () => {
   const {
@@ -26,6 +27,7 @@ const MusicFooter = () => {
   const [liked, setLiked] = useState(false);
 
   const { cookies } = useAuth();
+  const { setRefresh } = useSongApi();
   const token = cookies?.authToken;
   const songId = currentSong?._id;
 
@@ -49,6 +51,7 @@ const MusicFooter = () => {
       const response = await getDataApi(`/song/like/${songId}`, token);
       if (response.success) {
         setLiked(response.liked);
+        setRefresh((prev) => !prev);
         toast.success(response.msg || "Liked status changed");
       } else {
         toast.error(response.err || "sorry!! can't like your song");

@@ -1,4 +1,5 @@
 const User = require("../models/User");
+const Song = require("../models/Song");
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcrypt");
 
@@ -61,7 +62,6 @@ const loginController = async (req, res) => {
       return res.status(403).json({ err: "User not found with this email." });
     }
 
-    
     const isMatch = await bcrypt.compare(password, user.password);
 
     if (!isMatch) {
@@ -71,7 +71,7 @@ const loginController = async (req, res) => {
     }
 
     const token = await createToken(user._id);
-    
+
     const returnUser = {
       firstName: user.firstName,
       isArtist: user.isArtist,
@@ -152,9 +152,37 @@ const profileUpdateController = async (req, res) => {
   }
 };
 
+const userRemoveController = async (req, res) => {
+  try {
+    const { userId } = req.body;
+    const user = await User.findById(userId);
+    if (!user)
+      return res
+        .status(400)
+        .json({ success: false, message: "User not found." });
+
+    // Update the artist field in all their songs to indicate they are orphaned
+    await Song.updateMany({ artist: userId }, { artist: null });
+    // Delete the user account
+    await User.deleteOne({ _id: userId });
+
+    return res.status(200).json({
+      success: true,
+      message: "Your account has been deleted. Your songs are still available.",
+    });
+  } catch (error) {
+    console.error("Error deleting user:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Failed to delete account.",
+    });
+  }
+};
+
 module.exports = {
   registerController,
   loginController,
   profileController,
   profileUpdateController,
+  userRemoveController,
 };

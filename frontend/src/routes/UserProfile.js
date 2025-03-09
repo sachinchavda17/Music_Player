@@ -1,14 +1,23 @@
 import React, { useEffect, useState } from "react";
 import LoggedInContainer from "../containers/LoggedInContainer";
 import { useAuth } from "../contexts/AuthContext";
-import { getDataApi, updateDataApi } from "../utils/serverHelpers";
+import {
+  deleteDataApi,
+  getDataApi,
+  updateDataApi,
+} from "../utils/serverHelpers";
 import { toast } from "react-toastify";
 import Loading from "../components/Loading";
+import ConfirmationModal from "../components/ConfirmationModal";
+import { useAudio } from "../contexts/AudioContext";
 
 const UserProfile = () => {
-  const { cookies } = useAuth();
+  const { cookies, logoutCookie } = useAuth();
+  const { stopMusicLogout } = useAudio() || {};
   const [loading, setLoading] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
   const [formData, setFormData] = useState({
     firstName: "",
     lastName: "",
@@ -47,7 +56,23 @@ const UserProfile = () => {
     },
   ];
 
-  // Fetch user data on component mount
+  const handleDeleteAccount = async () => {
+    try {
+      const response = await deleteDataApi("/auth/remove", token);
+      if (!response.success) {
+        return toast.error(
+          response.err || "Error while Deleting your account."
+        );
+      }
+      logoutCookie();
+      stopMusicLogout();
+      toast.success(response.message || "Successfully deleted account.");
+
+      return;
+    } catch (error) {}
+    setIsModalOpen(false);
+  };
+
   useEffect(() => {
     const getData = async () => {
       try {
@@ -56,7 +81,7 @@ const UserProfile = () => {
         if (!response.success) {
           return toast.error(response.err || "Error while fetching your data");
         }
-        setFormData(response.user); // Initialize form data
+        setFormData(response.user);
       } catch (error) {
         toast.error(error.message || "Error while fetching your data");
       } finally {
@@ -69,7 +94,6 @@ const UserProfile = () => {
   const handleInputChange = (e) => {
     const { name, value } = e.target;
 
-    // Handle composite "Name" field separately
     if (name === "name") {
       const [firstName, ...lastNameParts] = value.split(" ");
       const lastName = lastNameParts.join(" ");
@@ -100,7 +124,7 @@ const UserProfile = () => {
         setFormData(formData); // Update user data
         setIsEditing(false);
         localStorage.setItem("currentUser", JSON.stringify(response.user));
-        window.location.reload()
+        window.location.reload();
       } else {
         toast.error(response.error || "Failed to update profile.");
       }
@@ -171,6 +195,21 @@ const UserProfile = () => {
                     <span>{formData?.isArtist ? "Yes" : "No"}</span>
                   )}
                 </div>
+                <button
+                  type="button"
+                  onClick={() => setIsModalOpen(true)}
+                  className="w-full bg-primary hover:bg-primary-light px-4 py-2 rounded-xl text-white"
+                >
+                  Permanently Delete Account
+                </button>
+
+                <ConfirmationModal
+                  isOpen={isModalOpen}
+                  onClose={() => setIsModalOpen(false)}
+                  onConfirm={handleDeleteAccount}
+                  title="Delete Account"
+                  message="Are you sure you want to delete your account? This action cannot be undone."
+                />
 
                 {/* Buttons */}
                 <div className="text-center mt-5 space-x-4">

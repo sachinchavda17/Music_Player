@@ -13,6 +13,7 @@ import { useAuth } from "../contexts/AuthContext";
 import { useSongApi } from "../contexts/SongApiContext";
 import UploadSongNonArtist from "./UploadSongNonArtist";
 import InputText from "../components/InputText";
+import ConfirmationModal from "../components/ConfirmationModal";
 
 const EditUploadSong = () => {
   const [name, setName] = useState("");
@@ -22,6 +23,7 @@ const EditUploadSong = () => {
   const [trackURL, setTrackURL] = useState("");
   const [thumbnailURL, setThumbnailURL] = useState("");
   const [loading, setLoading] = useState(false);
+  const [isModalOpen, setIsModalOpen] = useState(false);
   const [submitButtonLoading, setSubmitButtonLoading] = useState(false);
   const [deleteButtonLoading, setDeleteButtonLoading] = useState(false);
 
@@ -93,7 +95,7 @@ const EditUploadSong = () => {
     }
   };
 
-  const handleDelete = async () => {
+  const handleDeleteConfirm = async () => {
     try {
       setDeleteButtonLoading(true);
       const response = await deleteDataApi(
@@ -111,6 +113,10 @@ const EditUploadSong = () => {
     } finally {
       setDeleteButtonLoading(false);
     }
+  };
+
+  const handleDelete = () => {
+    setIsModalOpen(true);
   };
 
   return (
@@ -254,6 +260,13 @@ const EditUploadSong = () => {
                   )}
                 </button>
               )}
+              <ConfirmationModal
+                isOpen={isModalOpen}
+                onClose={() => setIsModalOpen(false)}
+                onConfirm={handleDeleteConfirm}
+                title="Delete Song"
+                message="Are you sure you want to delete your Song? This action cannot be undone."
+              />
             </div>
           </div>
         </div>

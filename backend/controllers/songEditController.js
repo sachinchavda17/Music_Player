@@ -5,7 +5,6 @@ const cloudinary = require("../utils/cloudinary");
 const createSongController = async (req, res) => {
   try {
     const { userId, name, thumbnail, track, artistName } = req.body;
-
     // Validate required fields
     if (!name || !artistName) {
       return res
@@ -16,53 +15,46 @@ const createSongController = async (req, res) => {
     let thumbnailUrl;
     let trackUrl;
 
-    // Handle thumbnail - check if it's a URL or file upload
-    if (thumbnail) {
-      if (thumbnail.startsWith("http") || thumbnail.startsWith("https")) {
-        // If thumbnail is a URL, use the provided URL
-        thumbnailUrl = thumbnail;
-      } else {
-        // If thumbnail is a file, upload it to Cloudinary
-        if (!req.files || !req.files.thumbnail) {
-          return res.status(400).json({ err: "Thumbnail is required." });
-        }
-        const thumbnailFile = req.files.thumbnail;
-        // Upload thumbnail to Cloudinary
-        const thumbnailCloud = await cloudinary.v2.uploader
-          .upload(thumbnailFile.tempFilePath, { folder: "songs" })
-          .catch((err) => {
-            throw new Error("Failed to upload thumbnail.");
-          });
-        thumbnailUrl = thumbnailCloud.secure_url;
-      }
+    if (
+      thumbnail &&
+      (thumbnail.startsWith("http") || thumbnail.startsWith("https"))
+    ) {
+      thumbnailUrl = thumbnail;
     } else {
-      return res.status(400).json({ err: "Thumbnail is required." });
+      // If thumbnail is a file, upload it to Cloudinary
+      if (!req.files || !req.files.thumbnail) {
+        return res.status(400).json({ err: "Thumbnail is required." });
+      }
+      const thumbnailFile = req.files.thumbnail;
+      console.log(thumbnailFile);
+      // Upload thumbnail to Cloudinary
+      const thumbnailCloud = await cloudinary.v2.uploader
+        .upload(thumbnailFile.tempFilePath, { folder: "songs" })
+        .catch((err) => {
+          throw new Error("Failed to upload thumbnail.");
+        });
+      thumbnailUrl = thumbnailCloud.secure_url;
     }
 
-    // Handle track - check if it's a URL or file upload
-    if (track) {
-      if (track.startsWith("http") || track.startsWith("https")) {
-        // If track is a URL, use the provided URL
-        trackUrl = track;
-      } else {
-        // If track is a file, upload it to Cloudinary
-        if (!req.files || !req.files.track) {
-          return res.status(400).json({ err: "Track is required." });
-        }
-        const trackFile = req.files.track;
-        // Upload track to Cloudinary
-        const trackCloud = await cloudinary.v2.uploader
-          .upload(
-            trackFile.tempFilePath,
-            { folder: "songs", resource_type: "video" } // `video` is preferred for audio files in Cloudinary
-          )
-          .catch((err) => {
-            throw new Error("Failed to upload track.");
-          });
-        trackUrl = trackCloud.secure_url;
-      }
+    if (track && (track.startsWith("http") || track.startsWith("https"))) {
+      // If track is a URL, use the provided URL
+      trackUrl = track;
     } else {
-      return res.status(400).json({ err: "Track is required." });
+      // If track is a file, upload it to Cloudinary
+      if (!req.files || !req.files.track) {
+        return res.status(400).json({ err: "Track is required." });
+      }
+      const trackFile = req.files.track;
+      // Upload track to Cloudinary
+      const trackCloud = await cloudinary.v2.uploader
+        .upload(
+          trackFile.tempFilePath,
+          { folder: "songs", resource_type: "video" } 
+        )
+        .catch((err) => {
+          throw new Error("Failed to upload track.");
+        });
+      trackUrl = trackCloud.secure_url;
     }
 
     // Create new song document
@@ -103,11 +95,10 @@ const getSongController = async (req, res) => {
   }
 };
 
-
 const updateSongController = async (req, res) => {
   try {
     const { id } = req.params;
-    const { name, thumbnail, track ,artistName} = req.body;
+    const { name, thumbnail, track, artistName } = req.body;
 
     // Validate required fields
     if (!name || !thumbnail || !track || !artistName) {
@@ -118,7 +109,7 @@ const updateSongController = async (req, res) => {
     }
 
     // Prepare the updated data
-    const updatedData = { name, thumbnail, track,artistName };
+    const updatedData = { name, thumbnail, track, artistName };
 
     // Find the food item to update
     const song = await Song.findById(id);

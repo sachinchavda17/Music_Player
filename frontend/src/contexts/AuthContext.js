@@ -16,6 +16,7 @@ export const AuthContextProvider = ({ children }) => {
   const [token, setToken] = useState("");
   const [loading, setLoading] = useState(true);
   const [refreshMain, setRefreshMain] = useState(false);
+  
   useEffect(() => {
     const authToken = cookies.authToken;
     if (authToken) {
