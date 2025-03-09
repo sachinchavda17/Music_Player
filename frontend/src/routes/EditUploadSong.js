@@ -5,16 +5,16 @@ import {
   fileUploadHandler,
   getDataApi,
 } from "../utils/serverHelpers";
-import Loading from "./Loading";
+import Loading from "../components/Loading";
 import { Icon } from "@iconify/react";
 import LoggedInContainer from "../containers/LoggedInContainer";
 import { toast } from "react-toastify";
 import { useAuth } from "../contexts/AuthContext";
 import { useSongApi } from "../contexts/SongApiContext";
-import UploadSongNonArtist from "../routes/UploadSongNonArtist";
-import InputText from "./InputText";
+import UploadSongNonArtist from "./UploadSongNonArtist";
+import InputText from "../components/InputText";
 
-const SongFormPage = () => {
+const EditUploadSong = () => {
   const [name, setName] = useState("");
   const [artistName, setArtistName] = useState("");
   const [trackFile, setTrackFile] = useState(null);
@@ -262,4 +262,4 @@ const SongFormPage = () => {
   );
 };
 
-export default SongFormPage;
+export default EditUploadSong;

@@ -7,7 +7,7 @@ import SearchPage from "./routes/SearchPage";
 import SongDetails from "./routes/SongDetails";
 import Userprofile from "./routes/UserProfile";
 import EditPage from "./routes/EditPage";
-import EditSongPage from "./components/EditSong";
+import EditUploadSong from "./routes/EditUploadSong";
 import LikedSongs from "./routes/LikedSongs";
 import { ToastContainer } from "react-toastify";
 import { AudioProvider } from "./contexts/AudioContext";
@@ -31,12 +31,12 @@ function App() {
                 <Route path="/profile" element={<Userprofile />} />
                 <Route path="/playedsong" element={<SongDetails />} />
                 <Route path="/likedsong" element={<LikedSongs />} />
-                <Route path="/uploadSong" element={<EditSongPage />} />
+                <Route path="/uploadSong" element={<EditUploadSong />} />
                 {user?.isArtist && (
                   <>
                     <Route path="/myMusic" element={<MyMusic />} />
                     <Route path="/edit" element={<EditPage />} />
-                    <Route path="/edit/:songId" element={<EditSongPage />} />
+                    <Route path="/edit/:songId" element={<EditUploadSong />} />
                     <Route path="*" element={<Navigate to="/" />} />
                   </>
                 )}
